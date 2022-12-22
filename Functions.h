@@ -1,11 +1,11 @@
 namespace alg::func {
-	// -----------------------------------
-	// vvv ---------Functions--------- vvv
+    // -----------------------------------
+    // vvv ---------Functions--------- vvv
 
 
-	const long double EPS = 1e-7;
-	const long double FI = (sqrtl(5.0) - 1.0) / 2.0;
-	const long double PI = acosl(-1.0);
+    const long double EPS = 1e-7;
+    const long double FI = (sqrtl(5.0) - 1.0) / 2.0;
+    const long double PI = acosl(-1.0);
 
     class AlgDomainError : public std::domain_error {
     public:
@@ -330,7 +330,7 @@ namespace alg::func {
     }
 
 
-	// ^^^ ---------Functions--------- ^^^
+    // ^^^ ---------Functions--------- ^^^
     // -----------------------------------
     // vvv -----------Random---------- vvv
 

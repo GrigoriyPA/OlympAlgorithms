@@ -676,7 +676,6 @@ namespace alg::geom {
 
                     result = func(result, matrix_[i][j]);
                 }
-
             }
 
             return result;

@@ -166,19 +166,24 @@ namespace alg::geom {
             return Vec2(x / other, y / other);
         }
 
-        template <typename T>
-        T get_value(T value, std::function<void(VT, T*)> func) const {
-            func(x, &value);
-            func(y, &value);
-            return value;
-        }
-
         VT length_sqr() const noexcept {
             return *this * *this;
         }
 
         long double length() const noexcept {
             return sqrtl(*this * *this);
+        }
+
+        VT get_value(std::function<VT(VT, VT)> func) const {
+            return func(x, y);
+        }
+
+        VT get_value(const VT& func(const VT&, const VT&)) const {
+            return get_value([&](const VT& left, const VT& right) -> const VT& { return func(left, right); });
+        }
+
+        VT get_value(VT func(VT, VT)) const {
+            return get_value([&](const VT& left, const VT& right) -> const VT& { return func(left, right); });
         }
 
         Vec2 normalize() const {
@@ -208,6 +213,34 @@ namespace alg::geom {
 
         bool in_triangle(const Vec2& v1, const Vec2& v2, const Vec2& v3) const noexcept {
             return (*this - v1).in_angle(v2 - v1, v3 - v1) && (*this - v2).in_angle(v1 - v2, v3 - v2);
+        }
+
+        Vec2 multiply(const Vec2& other) {
+            return Vec2(x * other.x, y * other.y);
+        }
+
+        Vec2 divide(const Vec2& other) {
+            if (func::equality(other.x, VT(0.0)) || func::equality(other.y, VT(0.0))) {
+                throw func::AlgDomainError(__FILE__, __LINE__, "divide, division by zero.\n\n");
+            }
+
+            return Vec2(x / other.x, y / other.y);
+        }
+
+        Vec2& apply_func(std::function<VT(VT)> func) {
+            x = func(x);
+            y = func(y);
+            return *this;
+        }
+
+        Vec2& apply_func(const VT& func(const VT&)) {
+            apply_func([&](const VT& value) -> const VT& { return func(value); });
+            return *this;
+        }
+
+        Vec2& apply_func(VT func(VT)) {
+            apply_func([&](const VT& value) -> const VT& { return func(value); });
+            return *this;
         }
 
         static long double cos_angle(const Vec2& v1, const Vec2& v2) {
@@ -476,20 +509,24 @@ namespace alg::geom {
             return Vec3(func::binary_exponentiation(x, other), func::binary_exponentiation(y, other), func::binary_exponentiation(z, other));
         }
 
-        template <typename T>
-        T get_value(T value, std::function<void(VT, T*)> func) const {
-            func(x, &value);
-            func(y, &value);
-            func(z, &value);
-            return value;
-        }
-
         VT length_sqr() const noexcept {
             return *this * *this;
         }
 
         long double length() const noexcept {
             return sqrtl(*this * *this);
+        }
+
+        VT get_value(std::function<VT(VT, VT)> func) const {
+            return func(func(x, y), z);
+        }
+
+        VT get_value(const VT& func(const VT&, const VT&)) const {
+            return get_value([&](const VT& left, const VT& right) -> const VT& { return func(left, right); });
+        }
+
+        VT get_value(VT func(VT, VT)) const {
+            return get_value([&](const VT& left, const VT& right) -> const VT& { return func(left, right); });
         }
 
         Vec3 normalize() const {
@@ -551,6 +588,35 @@ namespace alg::geom {
 
         bool in_triangle(const Vec3& v1, const Vec3& v2, const Vec3& v3) const noexcept {
             return (*this - v1).in_angle(v2 - v1, v3 - v1) && (*this - v2).in_angle(v1 - v2, v3 - v2);
+        }
+
+        Vec3 multiply(const Vec3& other) {
+            return Vec3(x * other.x, y * other.y, z * other.z);
+        }
+
+        Vec3 divide(const Vec3& other) {
+            if (func::equality(other.x, VT(0.0)) || func::equality(other.y, VT(0.0)) || func::equality(other.z, VT(0.0))) {
+                throw func::AlgDomainError(__FILE__, __LINE__, "divide, division by zero.\n\n");
+            }
+
+            return Vec3(x / other.x, y / other.y, z / other.z);
+        }
+
+        Vec3& apply_func(std::function<VT(VT)> func) {
+            x = func(x);
+            y = func(y);
+            z = func(z);
+            return *this;
+        }
+
+        Vec3& apply_func(const VT& func(const VT&)) {
+            apply_func([&](const VT& value) -> const VT& { return func(value); });
+            return *this;
+        }
+
+        Vec3& apply_func(VT func(VT)) {
+            apply_func([&](const VT& value) -> const VT& { return func(value); });
+            return *this;
         }
 
         static long double cos_angle(const Vec3& v1, const Vec3& v2) {

@@ -1,6 +1,6 @@
 namespace alg {
-	// -----------------------------------
-	// vvv ----------Complex---------- vvv
+    // -----------------------------------
+    // vvv ----------Complex---------- vvv
 
     namespace geom {
         struct AngleRepresentation {
@@ -108,34 +108,34 @@ namespace alg {
                 return !(*this == other);
             }
 
-            Complex& operator+=(const Complex& other) & noexcept {
+            Complex& operator+=(const Complex& other)& noexcept {
                 re += other.re;
                 im += other.im;
                 return *this;
             }
 
-            Complex& operator+=(const VT& other) & noexcept {
+            Complex& operator+=(const VT& other)& noexcept {
                 re += other;
                 return *this;
             }
 
-            Complex& operator-=(const Complex& other) & noexcept {
+            Complex& operator-=(const Complex& other)& noexcept {
                 re -= other.re;
                 im -= other.im;
                 return *this;
             }
 
-            Complex& operator-=(const VT& other) & noexcept {
+            Complex& operator-=(const VT& other)& noexcept {
                 re -= other;
                 return *this;
             }
 
-            Complex& operator*=(const Complex& other) & noexcept {
+            Complex& operator*=(const Complex& other)& noexcept {
                 *this = *this * other;
                 return *this;
             }
 
-            Complex& operator*=(const VT& other) & noexcept {
+            Complex& operator*=(const VT& other)& noexcept {
                 re *= other;
                 im *= other;
                 return *this;
@@ -161,7 +161,7 @@ namespace alg {
                 return *this;
             }
 
-            Complex& operator^=(int32_t other) & noexcept {
+            Complex& operator^=(int32_t other)& noexcept {
                 if (other < 0) {
                     *this = VT(1) / func::binary_exponentiation(*this, abs(other));
                 } else {
@@ -354,8 +354,8 @@ namespace alg {
         }
     }
 
-	// ^^^ ----------Complex---------- ^^^
-	// -----------------------------------
+    // ^^^ ----------Complex---------- ^^^
+    // -----------------------------------
 }   // Complex
 
 using namespace alg::geom;
