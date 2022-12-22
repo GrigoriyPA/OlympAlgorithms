@@ -1,0 +1,124 @@
+#include <iostream>
+#include <algorithm>
+#include <vector>
+using namespace std;
+ 
+ 
+vector < int > t;
+ 
+ 
+void build(int ind, int l, int r)
+{
+    if (l == r)
+    {
+        t[ind] = 0;
+        return;
+    }
+ 
+    int md = (l + r) / 2;
+    build(ind * 2, l, md);
+    build(ind * 2 + 1, md + 1, r);
+ 
+    t[ind] = max(t[2 * ind], t[2 * ind + 1]);
+}
+ 
+ 
+int get_max(int ind, int l, int r, int i, int j)
+{
+    if (l == i && r == j)
+    {
+        return t[ind];
+    }
+ 
+    int md = (l + r) / 2;
+    if (j <= md)
+    {
+        return get_max(2 * ind, l, md, i, j);
+    }
+    else if (i > md)
+    {
+        return get_max(2 * ind + 1, md + 1, r, i, j);
+    }
+    else
+    {
+        return max(get_max(2 * ind, l, md, i, md), get_max(2 * ind + 1, md + 1, r, md + 1, j));
+    }
+}
+ 
+ 
+void change(int ind, int l, int r, int i, int value)
+{
+    if (l == r)
+    {
+        t[ind] = value;
+        return;
+    }
+ 
+    int md = (l + r) / 2;
+    if (i <= md)
+    {
+        change(2 * ind, l, md, i, value);
+    }
+    else
+    {
+        change(2 * ind + 1, md + 1, r, i, value);
+    }
+ 
+    t[ind] = max(t[2 * ind], t[2 * ind + 1]);
+}
+ 
+ 
+int main()
+{
+    ios_base::sync_with_stdio(false);
+    int n, sec = -1;
+ 
+    cin >> n;
+ 
+    vector < int > a(n);
+    vector < int > x(n);
+    for (int i = 0; i < n; i++)
+    {
+        cin >> a[i];
+        x[i] = a[i];
+    }
+ 
+    sort(x.begin(), x.end());
+ 
+    t.resize(4 * x.size());
+    build(1, 0, x.size() - 1);
+ 
+    vector < int > dpa(n);
+    for (int i = 0; i < n; i++)
+    {
+        int cnt = get_max(1, 0, x.size() - 1, lower_bound(x.begin(), x.end(), a[i]) - x.begin(), x.size() - 1);
+        change(1, 0, x.size() - 1, lower_bound(x.begin(), x.end(), a[i]) - x.begin(), cnt + 1);
+        dpa[i] = cnt + 1;
+    }
+ 
+    for (int i = 0; i < n; i++)
+    {
+        if (sec == -1 || dpa[sec] <= dpa[i])
+        {
+            sec = i;
+        }
+    }
+ 
+    vector < int > ans(1, sec);
+    for (int i = sec - 1; i >= 0; i--)
+    {
+        if (dpa[i] + 1 == dpa[ans[ans.size() - 1]])
+        {
+            ans.push_back(i);
+        }
+    }
+ 
+    cout << ans.size() << endl;
+    for (int i = ans.size() - 1; i >= 0; i--)
+    {
+        cout << ans[i] + 1 << " ";
+    }
+    cout << endl;
+ 
+    return 0;
+}

@@ -1,0 +1,92 @@
+#include <algorithm>
+#include <iostream>
+#include <string>
+#include <vector>
+#include <queue>
+#include <map>
+#include <set>
+using namespace std;
+ 
+ 
+vector < vector < int > > g;
+vector < bool > used;
+vector < int > tin, up;
+set < int > point;
+int timer = 0;
+ 
+ 
+void dfs(int v, int p)
+{
+	tin[v] = timer;
+	timer++;
+ 
+	up[v] = tin[v];
+ 
+	used[v] = true;
+ 
+	int cnt = 0;
+	for (int to : g[v])
+	{
+		if (!used[to])
+		{
+			cnt++;
+			dfs(to, v);
+ 
+			if (tin[v] <= up[to] && p != -1)
+			{
+				point.insert(v + 1);
+			}
+			else
+			{
+				up[v] = min(up[v], up[to]);
+			}
+		}
+		else if (to != p)
+		{
+			up[v] = min(up[v], tin[to]);
+		}
+	}
+ 
+	if (p == -1 && cnt > 1)
+	{
+		point.insert(v + 1);
+	}
+}
+ 
+ 
+int main()
+{
+	ios_base::sync_with_stdio(false); cin.tie(0); cout.tie(0);
+	int n, m, b, e;
+ 
+	cin >> n >> m;
+ 
+	g.resize(n);
+	for (int i = 0; i < m; i++)
+	{
+		cin >> b >> e;
+ 
+		g[b - 1].push_back(e - 1);
+		g[e - 1].push_back(b - 1);
+	}
+ 
+	used.resize(n, false);
+	tin.resize(n);
+	up.resize(n);
+	for (int i = 0; i < n; i++)
+	{
+		if (!used[i])
+		{
+			dfs(i, -1);
+		}
+	}
+ 
+	cout << point.size() << endl;
+	for (set < int > ::iterator it = point.begin(); it != point.end(); it++)
+	{
+		cout << *it << " ";
+	}
+	cout << endl;
+ 
+	return 0;
+}

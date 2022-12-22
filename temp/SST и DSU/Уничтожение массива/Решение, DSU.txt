@@ -1,0 +1,106 @@
+#include <algorithm>
+#include <cmath>
+#include <iostream>
+#include <string>
+#include <vector>
+#include <queue>
+#include <map>
+#include <set>
+using namespace std;
+ 
+ 
+class DSU
+{
+public:
+	vector < int > p, rk;
+	vector < long long > sm;
+ 
+	DSU(int n)
+	{
+		p.resize(n);
+		for (int i = 0; i < n; i++)
+		{
+			p[i] = i;
+		}
+		rk.resize(n, 0);
+		sm.resize(n, 0);
+	}
+ 
+	int get(int v)
+	{
+		if (p[v] == v)
+		{
+			return v;
+		}
+		return p[v] = get(p[v]);
+	}
+ 
+	bool join(int u, int v)
+	{
+		u = get(u);
+		v = get(v);
+		if (u == v)
+		{
+			return false;
+		}
+		if (rk[u] > rk[v])
+		{
+			swap(u, v);
+		}
+		p[u] = v;
+		rk[v] = max(rk[v], rk[u] + 1);
+		sm[v] += sm[u];
+		return true;
+	}
+};
+ 
+ 
+int main()
+{
+	ios_base::sync_with_stdio(false); cin.tie(0); cout.tie(0);
+	cout.precision(15);
+	int n;
+ 
+	cin >> n;
+ 
+	vector < long long > a(n);
+	for (int i = 0; i < n; i++)
+	{
+		cin >> a[i];
+	}
+ 
+	vector < int > p(n);
+	for (int i = 0; i < n; i++)
+	{
+		cin >> p[i];
+		p[i]--;
+	}
+	reverse(p.begin(), p.end());
+ 
+	DSU dsu(n);
+	vector < bool > op(n, false);
+	vector < long long > ans(1, 0);
+	for (int el : p)
+	{
+		dsu.sm[el] = a[el];
+		op[el] = true;
+ 
+		if (el > 0 && op[el - 1])
+		{
+			dsu.join(el, el - 1);
+		}
+		if (el < n - 1 && op[el + 1])
+		{
+			dsu.join(el, el + 1);
+		}
+ 
+		ans.push_back(max(ans[ans.size() - 1], dsu.sm[dsu.get(el)]));
+	}
+ 
+	for (int i = ans.size() - 2; i >= 0; i--)
+	{
+		cout << ans[i] << endl;
+	}
+ 
+	return 0;
+}

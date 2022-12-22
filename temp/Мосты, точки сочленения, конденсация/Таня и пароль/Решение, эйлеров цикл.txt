@@ -1,0 +1,147 @@
+#include <algorithm>
+#include <iostream>
+#include <string>
+#include <vector>
+#include <queue>
+#include <map>
+#include <set>
+using namespace std;
+ 
+ 
+struct pt
+{
+	char c1, c2;
+ 
+	pt(char c1 = '#', char c2 = '#')
+	{
+		this->c1 = c1;
+		this->c2 = c2;
+	}
+ 
+	bool operator <(pt other) const
+	{
+		return int(c1) < int(other.c1) || int(c1) == int(other.c1) && int(c2) < int(other.c2);
+	}
+};
+ 
+ 
+struct rib
+{
+	char c1, c2, c3;
+	int id;
+ 
+	rib(char c1, char c2, char c3, int id)
+	{
+		this->c1 = c1;
+		this->c2 = c2;
+		this->c3 = c3;
+		this->id = id;
+	}
+};
+ 
+ 
+map < pt, vector < rib > > g;
+vector < bool > used;
+vector < int > path;
+map < pt, int > cnt;
+ 
+ 
+void dfs(pt v)
+{
+	int i;
+	for (; cnt[v] < g[v].size(); cnt[v]++)
+	{
+		i = cnt[v];
+		if (!used[g[v][i].id])
+		{
+			used[g[v][i].id] = true;
+			dfs(pt(g[v][i].c2, g[v][i].c3));
+			path.push_back(g[v][i].id);
+		}
+	}
+}
+ 
+ 
+int main()
+{
+	ios_base::sync_with_stdio(false); cin.tie(0); cout.tie(0);
+	int n, id = 0;
+ 
+	cin >> n;
+ 
+	vector < rib > ribs;
+	map < pt, pair < int, int > > t;
+	for (int i = 0; i < n; i++)
+	{
+		char c1, c2, c3;
+		cin >> c1 >> c2 >> c3;
+ 
+		ribs.push_back(rib(c1, c2, c3, i));
+ 
+		pt p1(c1, c2), p2(c2, c3);
+		cnt[p1] = 0;
+		cnt[p2] = 0;
+ 
+		g[p1].push_back(rib(c1, c2, c3, i));
+ 
+		if (t.find(p1) == t.end())
+		{
+			t[p1] = make_pair(0, 0);
+		}
+		t[p1].first++;
+ 
+		if (t.find(p2) == t.end())
+		{
+			t[p2] = make_pair(0, 0);
+		}
+		t[p2].second++;
+	}
+ 
+	pt s, e;
+	for (map < pt, pair < int, int > > ::iterator it = t.begin(); it != t.end(); it++)
+	{
+		if (it->second.first + 1 == it->second.second && e.c1 == '#')
+		{
+			e = it->first;
+		}
+		else if (it->second.first == it->second.second + 1 && s.c1 == '#')
+		{
+			s = it->first;
+		}
+		else if (it->second.first != it->second.second)
+		{
+			cout << "NO" << endl;
+			return 0;
+		}
+	}
+ 
+	used.resize(n, false);
+ 
+	if (s.c1 != '#')
+	{
+		dfs(s);
+	}
+	else
+	{
+		s = g.begin()->first;
+		dfs(g.begin()->first);
+	}
+ 
+	for (bool el : used)
+	{
+		if (!el)
+		{
+			cout << "NO" << endl;
+			return 0;
+		}
+	}
+ 
+	cout << "YES" << endl << s.c1 << s.c2;
+	for (int i = path.size() - 1; i >= 0; i--)
+	{
+		cout << ribs[path[i]].c3;
+	}
+	cout << endl;
+ 
+	return 0;
+}

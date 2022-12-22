@@ -1,0 +1,281 @@
+#include <algorithm>
+#include <iostream>
+#include <vector>
+#include <string>
+#include <map>
+#include <math.h>
+using namespace std;
+ 
+ 
+const double inf = 1000000000000, eps = 0.0000001, fi = 2 / (sqrt(5) + 1);
+ 
+ 
+// Класс, отвечающий за работу с векторми (3D)
+class Vect
+{
+public:
+	double x, y, z; // Координаты вектора в декартовой системе координат
+	int id;
+ 
+	// Конструктор
+	Vect(double x, double y, double z = 0)
+	{
+		this->x = x;
+		this->y = y;
+		this->z = z;
+	}
+ 
+	// Конструктор по умолчанию
+	Vect()
+	{
+		x = 0;
+		y = 0;
+		z = 0;
+	}
+ 
+ 
+	// Перегрузка оператора сравнения для Vect != Vect
+	bool operator !=(Vect other)
+	{
+		return x != other.x || y != other.y || z != other.z;
+	}
+ 
+	// Перегрузка оператора сравнения для Vect == Vect
+	bool operator ==(Vect other)
+	{
+		return x == other.x && y == other.y && z == other.z;
+	}
+ 
+ 
+	// Перегрузка оператора сложения для Vect += Vect
+	void operator +=(Vect other)
+	{
+		x += other.x;
+		y += other.y;
+		z += other.z;
+	}
+ 
+	// Перегрузка оператора вычитания для Vect -= Vect
+	void operator -=(Vect other)
+	{
+		x -= other.x;
+		y -= other.y;
+		z -= other.z;
+	}
+ 
+	// Перегрузка оператора умножения для Vect *= double
+	void operator *=(double other)
+	{
+		x *= other;
+		y *= other;
+		z *= other;
+	}
+ 
+	// Перегрузка оператора деления для Vect /= double
+	void operator /=(double other)
+	{
+		if (other != 0)
+		{
+			x /= other;
+			y /= other;
+			z /= other;
+		}
+		else
+		{
+			x = inf;
+			y = inf;
+			z = inf;
+		}
+	}
+ 
+ 
+	// Перегрузка оператора унарный минус для -Vect
+	inline Vect operator -()
+	{
+		return Vect(-x, -y, -z);
+	}
+ 
+ 
+	// Перегрузка оператора сложения для Vect + Vect
+	inline Vect operator +(Vect other)
+	{
+		return Vect(x + other.x, y + other.y, z + other.z);
+	}
+ 
+	// Перегрузка оператора вычитания для Vect - Vect
+	inline Vect operator -(Vect other)
+	{
+		return Vect(x - other.x, y - other.y, z - other.z);
+	}
+ 
+	// Перегрузка оператора умножения для Vect * double
+	inline Vect operator *(double other)
+	{
+		return Vect(x * other, y * other, z * other);
+	}
+ 
+	// Перегрузка оператора умножения (скалярное произведение) для Vect * Vect
+	inline double operator *(Vect other)
+	{
+		return x * other.x + y * other.y + z * other.z;
+	}
+ 
+	// Перегрузка оператора ^ (векторное произведение) для Vect ^ Vect
+	inline Vect operator ^(Vect other)
+	{
+		return Vect(y * other.z - z * other.y, z * other.x - x * other.z, x * other.y - y * other.x);
+	}
+ 
+	// Перегрузка оператора деления для Vect / double
+	Vect operator /(double other)
+	{
+		if (other != 0)
+		{
+			return Vect(x / other, y / other, z / other);
+		}
+		return Vect(inf, inf, inf);
+	}
+ 
+ 
+	// Получить длину вектора this
+	inline double length()
+	{
+		return sqrt(*this * *this);
+	}
+ 
+	// Нормализировать (привести длину к единице) вектор this
+	inline Vect normalization()
+	{
+		return *this / (*this).length();
+	}
+ 
+ 
+	// Получить косинус угла между векторами this, V
+	inline double Cos_angle(Vect V)
+	{
+		return (*this * V) / ((*this).length() * V.length());
+	}
+ 
+	// Получить синус угла между векторами this, V
+	inline double Sin_angle(Vect V)
+	{
+		return ((*this ^ V).length()) / ((*this).length() * V.length());
+	}
+ 
+	// Отразить вектор относительно нормали N
+	inline Vect Reflect_vect(Vect N)
+	{
+		return N * (N * *this) * 2 - *this;
+	}
+ 
+ 
+	Vect Refract_vect(Vect N, double n_obj, double n_env)
+	{
+		double cos_alf = (-*this).Cos_angle(N);
+		Vect a = N * (N * *this);
+		Vect x = *this - a;
+		if (cos_alf >= 0)
+		{
+			Vect y = x * (n_env / n_obj);
+			Vect b = a * (sqrt(*this * *this - y * y) / a.length());
+			return b + y;
+		}
+		Vect y = x * (n_obj / n_env);
+		if ((*this).length() >= y.length())
+		{
+			Vect b = a * (sqrt(*this * *this - y * y) / a.length());
+			return b + y;
+		}
+		return Vect();
+	}
+ 
+	// Для каждой компоненты установить максимум между компонентой вектора this и V
+	void Set_max(Vect V)
+	{
+		x = max(x, V.x);
+		y = max(y, V.y);
+		z = max(z, V.z);
+	}
+ 
+	// Для каждой компоненты установить минимум между компонентой вектора this и V
+	void Set_min(Vect V)
+	{
+		x = min(x, V.x);
+		y = min(y, V.y);
+		z = min(z, V.z);
+	}
+};
+ 
+ 
+double find_min_sphere(vector <double>& center, vector <Vect>& objects, short ind = 0, vector <double> MAX = {}, vector <double> MIN = {}, vector <double> sol = {})
+{
+	if (ind == 0)
+	{
+		Vect mx = objects[0], mn = objects[0];
+		for (Vect obj : objects)
+		{
+			mx.Set_max(obj);
+			mn.Set_min(obj);
+		}
+		MAX = { mx.x, mx.y, mx.z };
+		MIN = { mn.x, mn.y, mn.z };
+	}
+	if (ind == 3)
+	{
+		Vect C(sol[0], sol[1], sol[2]);
+		double result = 0;
+		for (Vect Object : objects)
+		{
+			if (result < (Object - C).length())
+			{
+				result = (Object - C).length();
+			}
+		}
+		return result;
+	}
+	double l = MIN[ind], r = MAX[ind];
+	while (r - l > eps)
+	{
+		double delt = (r - l) * fi, m2 = l + delt, m1 = r - delt;
+		sol.push_back(m1);
+		double fl = find_min_sphere(center, objects, ind + 1, MAX, MIN, sol);
+		sol.pop_back();
+		sol.push_back(m2);
+		double fr = find_min_sphere(center, objects, ind + 1, MAX, MIN, sol);
+		sol.pop_back();
+		if (fl > fr)
+		{
+			l = m1;
+		}
+		else
+		{
+			r = m2;
+		}
+	}
+	center[ind] = (l + r) / 2;
+	sol.push_back((l + r) / 2);
+	return find_min_sphere(center, objects, ind + 1, MAX, MIN, sol);
+}
+ 
+ 
+int main()
+{
+	ios_base::sync_with_stdio(false); cin.tie(0); cout.tie(0);
+	cout.precision(15);
+	
+	int n;
+ 
+	cin >> n;
+ 
+	vector <Vect> objects(n);
+	for (int i = 0; i < n; i++)
+	{
+		cin >> objects[i].x >> objects[i].y >> objects[i].z;
+	}
+ 
+	vector <double> center(3);
+	double radius = find_min_sphere(center, objects);
+	cout << center[0] << " " << center[1] << " " << center[2] << endl;
+ 
+	return 0;
+}

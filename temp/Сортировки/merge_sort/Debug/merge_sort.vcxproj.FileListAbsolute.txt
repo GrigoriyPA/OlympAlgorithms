@@ -1,0 +1,2 @@
+D:\Projects_C++\Сортировки\merge_sort\Debug\merge_sort.exe
+D:\Projects_C++\Сортировки\merge_sort\Debug\merge_sort.pdb

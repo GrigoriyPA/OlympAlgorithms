@@ -1,0 +1,152 @@
+#include <algorithm>
+#include <iostream>
+#include <string>
+#include <vector>
+#include <queue>
+#include <map>
+#include <set>
+using namespace std;
+ 
+ 
+struct edge
+{
+	long long w;
+	int to;
+ 
+	edge(int to, int w)
+	{
+		this->to = to;
+		this->w = w;
+	}
+};
+ 
+ 
+struct springboard
+{
+	int x, d, t, p, start = -1;
+ 
+	springboard(int x, int d, int t, int p)
+	{
+		this->x = x;
+		this->d = d;
+		this->t = t;
+		this->p = p;
+	}
+};
+ 
+ 
+pair < vector < long long >, vector < int > > dijkstra(int s, int e, vector < vector < edge > >& g)
+{
+	const long long INF = 1e18;
+ 
+	vector < long long > d(g.size(), INF);
+	d[s] = 0;
+ 
+	vector < int > p(g.size());
+	p[s] = -1;
+ 
+	set < pair < long long, int > > q;
+	q.insert(make_pair(0, s));
+ 
+	while (!q.empty())
+	{
+		int v = q.begin()->second;
+		q.erase(q.begin());
+ 
+		for (edge r : g[v])
+		{
+			if (d[r.to] > d[v] + r.w)
+			{
+				q.erase(make_pair(d[r.to], r.to));
+				d[r.to] = d[v] + r.w;
+				p[r.to] = v;
+				q.insert(make_pair(d[r.to], r.to));
+			}
+		}
+	}
+ 
+	vector < int > path;
+	int i = e;
+	while (i != -1)
+	{
+		path.push_back(i);
+		i = p[i];
+	}
+	reverse(path.begin(), path.end());
+ 
+	return make_pair(d, path);
+}
+ 
+ 
+int main()
+{
+	ios_base::sync_with_stdio(false); cin.tie(0); cout.tie(0);
+	int n, l;
+ 
+	cin >> n >> l;
+ 
+	int m = 2;
+	vector < pair < int, int > > xs;
+	vector < springboard > DB;
+	for (int i = 0; i < n; i++)
+	{
+		int x, d, t, p;
+		cin >> x >> d >> t >> p;
+		DB.push_back(springboard(x, d, t, p));
+		if (x - p >= 0)
+		{
+			xs.push_back(make_pair(x - p, i));
+			xs.push_back(make_pair(x + d, i));
+			m += 2;
+		}
+	}
+	xs.push_back(make_pair(0, -1));
+	xs.push_back(make_pair(l, n));
+	sort(xs.begin(), xs.end());
+ 
+	vector < vector < edge > > g(m);
+	for (int i = 1; i < m; i++)
+	{
+		g[i - 1].push_back(edge(i, xs[i].first - xs[i - 1].first));
+		g[i].push_back(edge(i - 1, xs[i].first - xs[i - 1].first));
+		if (xs[i].second >= 0 && xs[i].second < n)
+		{
+			if (xs[i].first == DB[xs[i].second].x - DB[xs[i].second].p)
+			{
+				DB[xs[i].second].start = i;
+			}
+			else
+			{
+				g[DB[xs[i].second].start].push_back(edge(i, DB[xs[i].second].p + DB[xs[i].second].t));
+			}
+		}
+	}
+ 
+	pair < vector < long long >, vector < int > > d_path = dijkstra(0, m - 1, g);
+	vector < long long > d = d_path.first;
+	vector < int > path = d_path.second;
+ 
+	cout << d[m - 1] << endl;
+ 
+	vector < int > ans;
+	for (int j = 1; j < path.size(); j++)
+	{
+		int i = path[j];
+		if (xs[i].second >= 0 && xs[i].second < n && xs[i].first != DB[xs[i].second].x - DB[xs[i].second].p)
+		{
+			if (path[j - 1] == DB[xs[i].second].start && d[path[j - 1]] + DB[xs[i].second].p + DB[xs[i].second].t == d[i])
+			{
+				ans.push_back(xs[i].second + 1);
+			}
+		}
+	}
+ 
+	cout << ans.size() << endl;
+	for (int el : ans)
+	{
+		cout << el << " ";
+	}
+	cout << endl;
+ 
+	return 0;
+}

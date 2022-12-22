@@ -1,0 +1,48 @@
+#include <algorithm>
+#include <iostream>
+#include <vector>
+#include <set>
+using namespace std;
+ 
+ 
+int main()
+{
+    int n;
+    
+    cin >> n;
+ 
+    vector < int > a(n);
+    for (int i = 0; i < n; i++)
+    {
+        cin >> a[i];
+    }
+ 
+    vector < vector < int > > dp(n);
+    for (int i = 0; i < n; i++)
+    {
+        dp[i].resize(n, 0);
+    }
+ 
+    for (int len = 3; len <= n; len++)
+    {
+        for (int l = 0; l <= n - len; l++)
+        {
+            int r = l + len - 1;
+ 
+            int mn = -1;
+            for (int k = l + 1; k < r; k++)
+            {
+                if (mn == -1 || mn > a[k] * a[l] * a[r] + dp[l][k] + dp[k][r])
+                {
+                    mn = a[k] * a[l] * a[r] + dp[l][k] + dp[k][r];
+                }
+            }
+ 
+            dp[l][r] = mn;
+        }
+    }
+ 
+    cout << dp[0][n - 1];
+ 
+    return 0;
+}

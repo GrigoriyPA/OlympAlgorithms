@@ -1,0 +1,58 @@
+#include <iostream>
+#include <vector>
+#include <algorithm>
+using namespace std;
+ 
+ 
+vector < vector < int > > g;
+vector < vector < int > > dp;
+vector < int > p;
+int d = 0;
+ 
+ 
+void dfs(int v)
+{
+	int s0 = 0, s1 = 0;
+ 
+	for (int c : g[v])
+	{
+		dfs(c);
+ 
+		s0 += dp[c][0];
+		s1 += dp[c][1];
+	}
+ 
+	dp[v][0] = s1;
+	dp[v][1] = max(s0 + p[v], s1);
+}
+ 
+ 
+int main()
+{
+	int n, pi, qi, root;
+ 
+	cin >> n;
+ 
+	g.resize(n);
+	p.resize(n);
+	for (int i = 0; i < n; i++)
+	{
+		cin >> pi >> p[i];
+ 
+		if (pi > 0)
+		{
+			g[pi - 1].push_back(i);
+		}
+		else
+		{
+			root = i;
+		}
+	}
+ 
+	dp.resize(n, vector < int >(2));
+	dfs(root);
+ 
+	cout << dp[root][1] << endl;
+ 
+	return 0;
+}

@@ -1,0 +1,42 @@
+#include <algorithm>
+#include <iostream>
+#include <string>
+#include <vector>
+using namespace std;
+ 
+ 
+int main()
+{
+    ios_base::sync_with_stdio(false); cin.tie(0); cout.tie(0);
+    string s;
+ 
+    cin >> s;
+ 
+    int n = s.length(), l = 0, r = 0, k = 0;
+    vector < int > z(n, 0);
+    for (int i = 1; i < n; i++)
+    {
+        z[i] = max(0, min(z[i - l], r - i + 1));
+        k = z[i];
+        while (k < n && s[k] == s[i + k])
+        {
+            k++;
+        }
+        z[i] = k;
+        if (i + z[i] - 1 > r)
+        {
+            l = i;
+            r = i + z[i] - 1;
+        }
+    }
+ 
+    z[0] = n;
+ 
+    for (int el : z)
+    {
+        cout << el << " ";
+    }
+    cout << endl;
+ 
+    return 0;
+}

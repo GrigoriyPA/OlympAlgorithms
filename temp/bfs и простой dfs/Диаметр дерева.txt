@@ -1,0 +1,61 @@
+#include <iostream>
+#include <vector>
+#include <algorithm>
+using namespace std;
+ 
+ 
+vector < vector < int > > g;
+vector < int > dp;
+int d = 0;
+ 
+ 
+void dfs(int v, int p)
+{
+	int mx1 = 0, mx2 = 0;
+	for (int c : g[v])
+	{
+		if (c != p)
+		{
+			dfs(c, v);
+			dp[v] = max(dp[v], dp[c] + 1);
+ 
+			if (dp[c] > mx1)
+			{
+				mx2 = mx1;
+				mx1 = dp[c];
+			}
+			else if (dp[c] > mx2)
+			{
+				mx2 = dp[c];
+			}
+		}
+	}
+	if (g[v].size() > 1 && d < mx1 + mx2 + 2)
+	{
+		d = mx1 + mx2 + 2;
+	}
+}
+ 
+ 
+int main()
+{
+	int n, a, b;
+ 
+	cin >> n;
+ 
+	g.resize(n);
+	for (int i = 0; i < n - 1; i++)
+	{
+		cin >> a >> b;
+ 
+		g[a - 1].push_back(b - 1);
+		g[b - 1].push_back(a - 1);
+	}
+ 
+	dp.resize(n, 0);
+	dfs(0, -1);
+ 
+	cout << d << endl;
+ 
+	return 0;
+}

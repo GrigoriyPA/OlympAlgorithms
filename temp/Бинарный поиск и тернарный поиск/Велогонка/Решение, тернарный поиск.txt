@@ -1,0 +1,68 @@
+#include <algorithm>
+#include <iostream>
+#include <string>
+#include <vector>
+using namespace std;
+ 
+ 
+#define double long double
+ 
+ 
+double fi = 2 / (sqrt(5) + 1);
+vector < pair < double, double > > c;
+ 
+ 
+double get_dist(double t)
+{
+	double mx = -1, mn = -1;
+	for (pair < double, double > ci : c)
+	{
+		double x = ci.first + t * ci.second;
+ 
+		if (mx == -1 || mx < x)
+		{
+			mx = x;
+		}
+		if (mn == -1 || mn > x)
+		{
+			mn = x;
+		}
+	}
+ 
+	double res = mx - mn;
+	return res;
+}
+ 
+ 
+int main()
+{
+    ios_base::sync_with_stdio(false); cin.tie(0); cout.tie(0);
+	cout.precision(15);
+    int n;
+ 
+    cin >> n;
+ 
+    c.resize(n);
+    for (int i = 0; i < n; i++)
+    {
+        cin >> c[i].first >> c[i].second;
+    }
+ 
+    double l = 0, r = 1000000000;
+	for (int i = 0; i < 200; i++)
+	{
+		double m2 = l + (r - l) * fi, m1 = r - (r - l) * fi;
+		if (get_dist(m1) > get_dist(m2))
+		{
+			l = m1;
+		}
+		else
+		{
+			r = m2;
+		}
+	}
+ 
+	cout << r << " " << get_dist(r) << endl;
+ 
+    return 0;
+}

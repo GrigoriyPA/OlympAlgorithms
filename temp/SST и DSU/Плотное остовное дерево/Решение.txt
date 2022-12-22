@@ -1,0 +1,131 @@
+#include <algorithm>
+#include <cmath>
+#include <iostream>
+#include <string>
+#include <vector>
+#include <queue>
+#include <map>
+#include <set>
+using namespace std;
+ 
+ 
+struct edge
+{
+	int s, e, w;
+ 
+	edge(int s = -1, int e = -1, int w = 0)
+	{
+		this->s = s;
+		this->e = e;
+		this->w = w;
+	}
+ 
+	bool operator <(edge other)
+	{
+		return w < other.w;
+	}
+};
+ 
+ 
+class DSU
+{
+public:
+	vector < int > p, rk;
+ 
+	DSU(int n)
+	{
+		p.resize(n);
+		for (int i = 0; i < n; i++)
+		{
+			p[i] = i;
+		}
+		rk.resize(n, 0);
+	}
+ 
+	int get(int v)
+	{
+		if (p[v] == v)
+		{
+			return v;
+		}
+		return p[v] = get(p[v]);
+	}
+ 
+	bool join(int u, int v)
+	{
+		u = get(u);
+		v = get(v);
+		if (u == v)
+		{
+			return false;
+		}
+		if (rk[u] > rk[v])
+		{
+			swap(u, v);
+		}
+		p[u] = v;
+		rk[v] = max(rk[v], rk[u] + 1);
+		return true;
+	}
+};
+ 
+ 
+int main()
+{
+	ios_base::sync_with_stdio(false); cin.tie(0); cout.tie(0);
+	cout.precision(15);
+	int n, m;
+ 
+	cin >> n >> m;
+ 
+	vector < edge > edges(m);
+	for (int i = 0; i < m; i++)
+	{
+		cin >> edges[i].s >> edges[i].e >> edges[i].w;
+		edges[i].s--;
+		edges[i].e--;
+	}
+	sort(edges.begin(), edges.end());
+ 
+	int min_dif = 2e9 + 1;
+	while (!edges.empty())
+	{
+		DSU dsu(n);
+		int mnw = 1e9, mxw = -1e9, cnt = 0;
+		for (edge ed : edges)
+		{
+			if (dsu.join(ed.s, ed.e))
+			{
+				if (ed.w < mnw)
+				{
+					mnw = ed.w;
+				}
+				if (ed.w > mxw)
+				{
+					mxw = ed.w;
+				}
+				cnt++;
+			}
+			if (cnt == n - 1)
+			{
+				break;
+			}
+		}
+		if (cnt == n - 1 && min_dif > mxw - mnw)
+		{
+			min_dif = mxw - mnw;
+		}
+		edges.erase(edges.begin());
+	}
+ 
+	if (min_dif == 2e9 + 1)
+	{
+		cout << "NO" << endl;
+	}
+	else
+	{
+		cout << "YES" << endl << min_dif << endl;
+	}
+ 
+	return 0;
+}

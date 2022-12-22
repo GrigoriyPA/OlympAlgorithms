@@ -1,0 +1,98 @@
+#include <algorithm>
+#include <iostream>
+#include <string>
+#include <vector>
+#include <queue>
+#include <map>
+#include <set>
+using namespace std;
+ 
+ 
+vector < vector < int > > g;
+vector < vector < int > > gr;
+vector < bool > used;
+vector < int > order;
+vector < int > comp;
+int cmp = 0;
+ 
+ 
+void topsort(int v)
+{
+	used[v] = true;
+	for (int c : g[v])
+	{
+		if (!used[c])
+		{
+			topsort(c);
+		}
+	}
+	order.push_back(v);
+}
+ 
+ 
+void dfs_rev(int v)
+{
+	comp[v] = cmp;
+	for (int to : gr[v])
+	{
+		if (comp[to] == -1)
+		{
+			dfs_rev(to);
+		}
+	}
+}
+ 
+ 
+int main()
+{
+	ios_base::sync_with_stdio(false); cin.tie(0); cout.tie(0);
+	int n, m, b, e;
+ 
+	cin >> n >> m;
+ 
+	g.resize(n);
+	gr.resize(n);
+	vector < pair < int, int > > ribs(m);
+	for (int i = 0; i < m; i++)
+	{
+		cin >> ribs[i].first >> ribs[i].second;
+		ribs[i].first--;
+		ribs[i].second--;
+		g[ribs[i].first].push_back(ribs[i].second);
+		gr[ribs[i].second].push_back(ribs[i].first);
+	}
+ 
+	used.resize(n, false);
+	for (int i = 0; i < n; i++)
+	{
+		if (!used[i])
+		{
+			topsort(i);
+		}
+	}
+ 
+	reverse(order.begin(), order.end());
+ 
+	comp.resize(n, -1);
+	for (int i = 0; i < n; i++)
+	{
+		if (comp[order[i]] == -1)
+		{
+			dfs_rev(order[i]);
+			cmp++;
+		}
+	}
+ 
+	set < pair < int, int > > ans;
+	for (pair < int, int > rib : ribs)
+	{
+		if (comp[rib.first] != comp[rib.second])
+		{
+			ans.insert(make_pair(comp[rib.first], comp[rib.second]));
+		}
+	}
+ 
+	cout << ans.size() << endl;
+ 
+	return 0;
+}

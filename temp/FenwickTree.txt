@@ -1,0 +1,91 @@
+class FenwickTree {
+public:
+	FenwickTree(vector < int > v) {
+		t_sum_1d.resize(v.size() + 1, 0);
+		t_xor_1d.resize(v.size() + 1, 0);
+		v_1d.resize(v.size(), 0);
+		for (int i = 0; i < v.size(); i++)
+			update(i, v[i]);
+	}
+
+	FenwickTree(vector < vector < int > > v) {
+		t_sum_2d.resize(v.size() + 1, vector < long long >(v[0].size() + 1, 0));
+		v_2d.resize(v.size(), vector < int >(v[0].size(), 0));
+		for (int i = 0; i < v.size(); i++)
+			for (int j = 0; j < v[i].size(); j++)
+				update(i, j, v[i][j]);
+	}
+
+
+	long long get_sum(int xl, int xr) {
+		return prefix_sum(xr + 1) - prefix_sum(xl);
+	}
+
+	long long get_sum(int xl, int yl, int xr, int yr) {
+		return prefix_sum(xr + 1, yr + 1) - prefix_sum(xr + 1, yl) - prefix_sum(xl, yr + 1) + prefix_sum(xl, yl);
+	}
+
+	long long get_xor(int xl, int xr) {
+		return prefix_xor(xr + 1) ^ prefix_xor(xl);
+	}
+
+
+	void update(int x, int val) {
+		update_sum(x, val);
+		update_xor(x, val);
+		v_1d[x] = val;
+	}
+
+	void update(int x, int y, int val) {
+		update_sum(x, y, val);
+		v_2d[x][y] = val;
+	}
+
+private:
+	vector < long long > t_sum_1d;
+	vector < int > t_xor_1d;
+	vector < int > v_1d;
+	vector < vector < long long > > t_sum_2d;
+	vector < vector < int > > v_2d;
+
+	long long prefix_sum(int x) {
+		long long res = 0;
+		for (int i = x; i > 0; i = (i & (i + 1)) - 1)
+			res += t_sum_1d[i];
+		return res;
+	}
+
+	long long prefix_sum(int x, int y) {
+		long long res = 0;
+		for (int i = x; i > 0; i = (i & (i + 1)) - 1)
+			for (int j = y; j > 0; j = (j & (j + 1)) - 1)
+				res += t_sum_2d[i][j];
+		return res;
+	}
+
+	int prefix_xor(int x) {
+		int res = 0;
+		for (int i = x; i > 0; i = (i & (i + 1)) - 1)
+			res ^= t_xor_1d[i];
+		return res;
+	}
+
+	void update_sum(int x, int val) {
+		int add = val - v_1d[x];
+		for (int i = x + 1; i < t_sum_1d.size(); i = i | (i + 1))
+			t_sum_1d[i] += add;
+	}
+
+	void update_sum(int x, int y, int val) {
+		int add = val - v_2d[x][y];
+		for (int i = x + 1; i < t_sum_2d.size(); i = i | (i + 1))
+			for (int j = y + 1; j < t_sum_2d[i].size(); j = j | (j + 1))
+				t_sum_2d[i][j] += add;
+	}
+
+	void update_xor(int x, int val) {
+		int add = val ^ v_1d[x];
+		for (int i = x + 1; i < t_sum_1d.size(); i = i | (i + 1))
+			t_xor_1d[i] ^= add;
+	}
+};

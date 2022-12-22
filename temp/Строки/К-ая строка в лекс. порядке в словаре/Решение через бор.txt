@@ -1,0 +1,102 @@
+#include <iostream>
+#include <string>
+#include <vector>
+#include <set>
+using namespace std;
+ 
+ 
+class node
+{
+public:
+    vector < int > p;
+    int cnt = 0;
+    int term = 0;
+ 
+    node()
+    {
+        p.resize(26, -1);
+    }
+};
+ 
+ 
+vector < node > boron(300000);
+int cnt = 1;
+ 
+ 
+void add(string s)
+{
+    int cur = 0;
+    vector < int > path;
+    for (int i = 0; i < s.length(); i++)
+    {
+        path.push_back(cur);
+        if (boron[cur].p[s[i] - 'a'] == -1)
+        {
+            boron[cur].p[s[i] - 'a'] = cnt;
+            cnt++;
+        }
+        cur = boron[cur].p[s[i] - 'a'];
+    }
+    path.push_back(cur);
+    boron[cur].term++;
+    for (int nd : path)
+    {
+        boron[nd].cnt++;
+    }
+}
+ 
+ 
+string get(int k)
+{
+    int cur = 0;
+    string res;
+    while (k > 0)
+    {
+        k -= boron[cur].term;
+        for (int i = 0; i < 26 && k > 0; i++)
+        {
+            if (boron[cur].p[i] != -1)
+            {
+                if (boron[boron[cur].p[i]].cnt < k)
+                {
+                    k -= boron[boron[cur].p[i]].cnt;
+                }
+                else
+                {
+                    cur = boron[cur].p[i];
+                    res += char(i + 'a');
+                    break;
+                }
+            }
+        }
+    }
+    return res;
+}
+ 
+ 
+int main()
+{
+    ios_base::sync_with_stdio(false); cin.tie(0); cout.tie(0);
+    int n;
+ 
+    cin >> n;
+ 
+    int f, k;
+    string s;
+    for (int i = 0; i < n; i++)
+    {
+        cin >> f;
+        if (f == 1)
+        {
+            cin >> s;
+            add(s);
+        }
+        else
+        {
+            cin >> k;
+            cout << get(k) << endl;
+        }
+    }
+ 
+    return 0;
+}

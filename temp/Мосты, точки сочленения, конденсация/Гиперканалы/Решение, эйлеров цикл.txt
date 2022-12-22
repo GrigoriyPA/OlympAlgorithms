@@ -1,0 +1,79 @@
+#include <algorithm>
+#include <iostream>
+#include <string>
+#include <vector>
+#include <queue>
+#include <map>
+#include <set>
+using namespace std;
+ 
+ 
+struct rib
+{
+	int to, id;
+ 
+	rib(int to, int id)
+	{
+		this->to = to;
+		this->id = id;
+	}
+};
+ 
+ 
+vector < vector < rib > > g;
+vector < bool > used;
+vector < int > path;
+vector < int > cnt;
+ 
+ 
+void dfs(int v)
+{
+	int i;
+	for (; cnt[v] < g[v].size(); cnt[v]++)
+	{
+		i = cnt[v];
+		if (!used[g[v][i].id])
+		{
+			used[g[v][i].id] = true;
+			dfs(g[v][i].to);
+			path.push_back(g[v][i].id);
+		}
+	}
+}
+ 
+ 
+int main()
+{
+	ios_base::sync_with_stdio(false); cin.tie(0); cout.tie(0);
+	int n, m = 0, a, f;
+ 
+	cin >> n >> a;
+ 
+	g.resize(n);
+	vector < pair < int, int > > ribs;
+	for (int i = 0; i < n; i++)
+	{
+		for (int j = 0; j < n; j++)
+		{
+			cin >> f;
+ 
+			if (!f && i != j)
+			{
+				g[i].push_back(rib(j, m));
+				ribs.push_back(make_pair(i, j));
+				m++;
+			}
+		}
+	}
+ 
+	used.resize(m, false);
+	cnt.resize(n, 0);
+	dfs(a - 1);
+ 
+	for (int i = path.size() - 1; i >= 0; i--)
+	{
+		cout << ribs[path[i]].first + 1 << " " << ribs[path[i]].second + 1 << endl;
+	}
+ 
+	return 0;
+}

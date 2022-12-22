@@ -1,0 +1,106 @@
+#include <algorithm>
+#include <iostream>
+#include <string>
+#include <vector>
+using namespace std;
+ 
+ 
+int main()
+{
+	ios_base::sync_with_stdio(false); cin.tie(0); cout.tie(0);
+	cout.precision(15);
+	int n, k;
+ 
+	cin >> n >> k;
+ 
+	int l = 1, r = n, m1, m2, s1, s2;
+	while (r - l > 2)
+	{
+		m1 = (l + r) / 2;
+		m2 = (l + r) / 2 + 1;
+ 
+		cout << "? " << m1 << endl;
+		cin >> s1;
+ 
+		cout << "? " << m2 << endl;
+		cin >> s2;
+ 
+		if (s1 < s2)
+		{
+			l = m1;
+		}
+		else
+		{
+			r = m2;
+		}
+	}
+ 
+	int ec = (l + r) / 2, sec;
+	cout << "? " << ec << endl;
+	cin >> sec;
+ 
+	if (k == sec)
+	{
+		cout << "! " << ec << endl;
+		return 0;
+	}
+ 
+	l = 1;
+	r = ec;
+	while (r - l > 1)
+	{
+		int md = (l + r) / 2, s;
+ 
+		cout << "? " << md << endl;
+		cin >> s;
+ 
+		if (s <= k)
+		{
+			l = md;
+		}
+		else
+		{
+			r = md;
+		}
+	}
+ 
+	int sl;
+	cout << "? " << l << endl;
+	cin >> sl;
+ 
+	if (sl == k)
+	{
+		cout << "! " << l << endl;
+		return 0;
+	}
+ 
+	l = ec;
+	r = n;
+	while (r - l > 1)
+	{
+		int md = (l + r) / 2, s;
+ 
+		cout << "? " << md << endl;
+		cin >> s;
+ 
+		if (s <= k)
+		{
+			r = md;
+		}
+		else
+		{
+			l = md;
+		}
+	}
+ 
+	int sr;
+	cout << "? " << r << endl;
+	cin >> sr;
+ 
+	if (sr == k)
+	{
+		cout << "! " << r << endl;
+	}
+ 
+	return 0;
+}

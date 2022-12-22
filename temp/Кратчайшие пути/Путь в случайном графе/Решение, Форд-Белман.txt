@@ -1,0 +1,75 @@
+#include <algorithm>
+#include <iostream>
+#include <string>
+#include <vector>
+#include <queue>
+#include <map>
+#include <set>
+using namespace std;
+ 
+ 
+struct edge
+{
+	long long w;
+	int to;
+ 
+	edge(int to, int w)
+	{
+		this->to = to;
+		this->w = w;
+	}
+};
+ 
+ 
+const long long INF = 1e18;
+ 
+ 
+int main()
+{
+	ios_base::sync_with_stdio(false); cin.tie(0); cout.tie(0);
+	int n, m, s, t;
+ 
+	cin >> n >> m >> s >> t;
+ 
+	vector < vector < edge > > g(n);
+	for (int i = 0; i < m; i++)
+	{
+		int a, b, w;
+		cin >> a >> b >> w;
+		g[a - 1].push_back(edge(b - 1, w));
+	}
+ 
+	vector < long long > d(n, INF);
+	d[s - 1] = 0;
+ 
+	queue < int > q;
+	q.push(s - 1);
+ 
+	vector < bool > used(n, false);
+	used[s - 1] = true;
+ 
+	while (!q.empty())
+	{
+		int v = q.front();
+		q.pop();
+ 
+		used[v] = false;
+ 
+		for (edge r : g[v])
+		{
+			if (d[r.to] > d[v] + r.w)
+			{
+				d[r.to] = d[v] + r.w;
+				if (!used[r.to])
+				{
+					q.push(r.to);
+					used[r.to] = true;
+				}
+			}
+		}
+	}
+ 
+	cout << d[t - 1] << endl;
+ 
+	return 0;
+}

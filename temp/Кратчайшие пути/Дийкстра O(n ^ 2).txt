@@ -1,0 +1,88 @@
+#include <algorithm>
+#include <iostream>
+#include <string>
+#include <vector>
+#include <queue>
+#include <map>
+#include <set>
+using namespace std;
+ 
+ 
+struct rib
+{
+	int to, w;
+ 
+	rib(int to, int w)
+	{
+		this->to = to;
+		this->w = w;
+	}
+};
+ 
+ 
+vector < long long > dijkstra(int s, vector < vector < rib > >& g)
+{
+	const long long INF = 1e18;
+ 
+	vector < long long > d(g.size(), INF);
+	d[s] = 0;
+ 
+	vector < bool > used(g.size(), false);
+ 
+	for (int k = 0; k < g.size(); k++)
+	{
+		int v = -1;
+		for (int i = 0; i < g.size(); i++)
+		{
+			if (!used[i] && (v == -1 || d[v] > d[i]))
+			{
+				v = i;
+			}
+		}
+ 
+		used[v] = true;
+		if (d[v] == INF)
+		{
+			break;
+		}
+ 
+		for (rib r : g[v])
+		{
+			if (d[r.to] > d[v] + r.w)
+			{
+				d[r.to] = d[v] + r.w;
+			}
+		}
+	}
+ 
+	return d;
+}
+ 
+ 
+int main()
+{
+	ios_base::sync_with_stdio(false); cin.tie(0); cout.tie(0);
+	int n, m;
+ 
+	cin >> n >> m;
+ 
+	vector < vector < rib > > g(n);
+	for (int i = 0; i < m; i++)
+	{
+		int b, e, w;
+		cin >> b >> e >> w;
+ 
+		g[b - 1].push_back(rib(e - 1, w));
+		g[e - 1].push_back(rib(b - 1, w));
+	}
+ 
+	vector < long long > d = dijkstra(0, g);
+ 
+	for (long long el : d)
+	{
+		cout << el << " ";
+	}
+	cout << endl;
+ 
+	return 0;
+}
