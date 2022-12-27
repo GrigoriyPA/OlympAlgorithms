@@ -298,15 +298,11 @@ namespace alg::data_struct {
 
     template <typename T>
     std::istream& operator>>(std::istream& fin, FenwickTree<T>& tree) noexcept {
-        size_t size;
-        fin >> size;
-
-        tree.clear();
-        for (size_t i = 0; i < size; ++i) {
+        for (size_t i = 0; i < tree.size(); ++i) {
             T value;
             fin >> value;
 
-            tree.push_back(value);
+            tree.update(i, value);
         }
         return fin;
     }

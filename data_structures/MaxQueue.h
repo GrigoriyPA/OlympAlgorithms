@@ -123,9 +123,7 @@ namespace alg::data_struct {
 
     template <typename T, typename PR>
     std::istream& operator>>(std::istream& fin, MaxQueue<T, PR>& max_queue) noexcept {
-        size_t size;
-        fin >> size;
-
+        size_t size = max_queue.size();
         max_queue.clear();
         for (size_t i = 0; i < size; ++i) {
             T value;
