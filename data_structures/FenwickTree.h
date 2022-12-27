@@ -10,7 +10,7 @@ namespace alg::data_struct {
             FenwickTree* tree_;
 
         public:
-            ProxyObject(size_t id, FenwickTree* tree) noexcept {
+            ProxyObject(size_t id, FenwickTree* tree) {
                 if (id >= tree->size()) {
                     throw func::AlgOutOfRange(__FILE__, __LINE__, "ProxyObject, invalid index.\n\n");
                 }
@@ -55,15 +55,17 @@ namespace alg::data_struct {
 
     public:
         class Iterator {
-            int64_t id_ = 0;
-            FenwickTree* tree_ = nullptr;
+            friend class FenwickTree<VT>;
 
-        public:
+            int64_t id_;
+            FenwickTree* tree_;
+
             Iterator(int64_t id, FenwickTree* tree) noexcept {
                 id_ = id;
                 tree_ = tree;
             }
 
+        public:
             bool operator==(const Iterator& other) const {
                 return id_ == other.id_ && tree_ == other.tree_;
             }
@@ -256,7 +258,11 @@ namespace alg::data_struct {
             update(value_.size() - 1, value);
         }
 
-        void pop_back() noexcept {
+        void pop_back() {
+            if (empty()) {
+                throw func::AlgRuntimeError(__FILE__, __LINE__, "pop_back, attempt to pop from empty tree.\n\n");
+            }
+
             value_.pop_back();
             tree_.pop_back();
         }

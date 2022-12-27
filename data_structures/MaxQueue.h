@@ -2,6 +2,7 @@ namespace alg::data_struct {
     // -----------------------------------
     // vvv ----------MaxQueue--------- vvv
 
+
     template <typename VT = int64_t, typename PR = std::less<VT>>  // Constructors required: VT(), VT(VT); Operators required: <(VT, VT)
     class MaxQueue {
         struct QueueElement {
@@ -151,6 +152,7 @@ namespace alg::data_struct {
         fout << func::make_table_decorated(description);
         return fout;
     }
+
 
     // ^^^ ----------MaxQueue--------- ^^^
     // -----------------------------------

@@ -2,6 +2,7 @@ namespace alg {
     // -----------------------------------
     // vvv ----------Complex---------- vvv
 
+
     namespace geom {
         struct AngleRepresentation {
             long double length = 0.0;
@@ -353,6 +354,7 @@ namespace alg {
             return std::abs(left.re - right.re) <= eps && std::abs(left.im - right.im) <= eps;
         }
     }
+
 
     // ^^^ ----------Complex---------- ^^^
     // -----------------------------------
