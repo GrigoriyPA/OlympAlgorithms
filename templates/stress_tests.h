@@ -1,5 +1,8 @@
-#include "../Algorithms/Algorithms.h"
 #define DEBUG
+
+#ifdef DEBUG
+#include "../Algorithms/Algorithms.h"
+#endif  // DEBUG
 
 signed main() {
     ios_base::sync_with_stdio(0); cin.tie(0); cout.tie(0); cout.precision(30);
@@ -16,7 +19,7 @@ signed main() {
 
         if (!(false)) {
             std::cout << "DEBUG, invalid behavior detected on seed " << seed << ".\n";
-            throw AlgRuntimeError(__FILE__, __LINE__, "DEBUG, invalid behavior detected.\n");
+            return 0;
         }
     }
 #else  // DEBUG

@@ -10,6 +10,7 @@
 #include <vector>
 
 #include "Functions.h"
+#include "math/Math.h"
 #include "strings/Strings.h"
 #include "geometry/Geometry.h"
 #include "data_structures/DataStructures.h"
