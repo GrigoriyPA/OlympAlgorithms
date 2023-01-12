@@ -314,19 +314,44 @@ namespace alg::func {
         seed ^= std::hash<T>()(value) + 0x9e3779b9 + (seed << 6) + (seed >> 2);
     }
 
-    template <typename T, typename It>  // Operators required: !=(It, It), ++(It), *(It); Structures required: std::iterator_traits<It>
-    T get_value(It container_begin, It container_end, T value, std::function<void(const typename std::iterator_traits<It>::value_type&, T*)> func) {
-        for (; container_begin != container_end; ++container_begin) {
-            func(*container_begin, &value);
+    template <typename It>  // Operators required: !=(It, It), ++(It), *(It); Structures required: std::iterator_traits<It>
+    typename std::iterator_traits<It>::value_type get_value(It container_begin, It container_end, std::function<typename std::iterator_traits<It>::value_type(typename std::iterator_traits<It>::value_type, typename std::iterator_traits<It>::value_type)> func) {
+        if (!(container_begin != container_end)) {
+            throw func::AlgOutOfRange(__FILE__, __LINE__, "get_value, called from empty container.\n\n");
         }
-        return value;
+
+        typename std::iterator_traits<It>::value_type result = *(container_begin++);
+        for (; container_begin != container_end; ++container_begin) {
+            result = func(result, *container_begin);
+        }
+        return result;
     }
 
     template <typename It>  // Operators required: !=(It, It), ++(It), *(It); Structures required: std::iterator_traits<It>
-    void apply_func(It container_begin, It container_end, std::function<void(const typename std::iterator_traits<It>::value_type&)> func) {
+    typename std::iterator_traits<It>::value_type get_value(It container_begin, It container_end, const typename std::iterator_traits<It>::value_type& func(const typename std::iterator_traits<It>::value_type&, const typename std::iterator_traits<It>::value_type&)) {
+        return get_value(container_begin, container_end, [&](const typename std::iterator_traits<It>::value_type& left, const typename std::iterator_traits<It>::value_type& right) -> const typename std::iterator_traits<It>::value_type& { return func(left, right); });
+    }
+
+    template <typename It>  // Operators required: !=(It, It), ++(It), *(It); Structures required: std::iterator_traits<It>
+    typename std::iterator_traits<It>::value_type get_value(It container_begin, It container_end, typename std::iterator_traits<It>::value_type func(typename std::iterator_traits<It>::value_type, typename std::iterator_traits<It>::value_type)) {
+        return get_value(container_begin, container_end, [&](const typename std::iterator_traits<It>::value_type& left, const typename std::iterator_traits<It>::value_type& right) -> const typename std::iterator_traits<It>::value_type& { return func(left, right); });
+    }
+
+    template <typename It>  // Operators required: !=(It, It), ++(It), *(It); Structures required: std::iterator_traits<It>
+    void apply_func(It container_begin, It container_end, std::function<typename std::iterator_traits<It>::value_type(typename std::iterator_traits<It>::value_type)> func) {
         for (; container_begin != container_end; ++container_begin) {
-            func(*container_begin);
+            *container_begin = func(*container_begin);
         }
+    }
+
+    template <typename It>  // Operators required: !=(It, It), ++(It), *(It); Structures required: std::iterator_traits<It>
+    void apply_func(It container_begin, It container_end, const typename std::iterator_traits<It>::value_type& func(const typename std::iterator_traits<It>::value_type&)) {
+        apply_func(container_begin, container_end, [&](const typename std::iterator_traits<It>::value_type& value) -> const typename std::iterator_traits<It>::value_type& { return func(value); });
+    }
+
+    template <typename It>  // Operators required: !=(It, It), ++(It), *(It); Structures required: std::iterator_traits<It>
+    void apply_func(It container_begin, It container_end, typename std::iterator_traits<It>::value_type func(typename std::iterator_traits<It>::value_type)) {
+        apply_func(container_begin, container_end, [&](const typename std::iterator_traits<It>::value_type& value) -> const typename std::iterator_traits<It>::value_type& { return func(value); });
     }
 
 
@@ -447,10 +472,17 @@ namespace alg::func {
             return RandIntStruct<has_zip_map<T>(left, right, [&](auto left, auto right) { return left; }), T>(this)(left, right);
         }
 
-        template <typename It>
+        template <typename It>  // Operators required: !=(It, It), ++(It), *(It)
         void rand_int_container(It left_begin, It left_end, It right_begin, It right_end, It result_begin) {
             for (; left_begin != left_end && right_begin != right_end; ++left_begin, ++right_begin, ++result_begin) {
                 *result_begin = rand_int(*left_begin, *right_begin);
+            }
+        }
+
+        template <typename It>  // Operators required: !=(It, It), ++(It), *(It); Structures required: std::iterator_traits<It>
+        void rand_int_container(const typename std::iterator_traits<It>::value_type& left, const typename std::iterator_traits<It>::value_type& right, It result_begin, It result_end) {
+            for (; result_begin != result_end; ++result_begin) {
+                *result_begin = rand_int(left, right);
             }
         }
 
@@ -459,10 +491,17 @@ namespace alg::func {
             return RandFloatStruct<has_zip_map<T>(left, right, [&](auto left, auto right) { return left; }), T>(this)(left, right);
         }
 
-        template <typename It>
+        template <typename It>  // Operators required: !=(It, It), ++(It), *(It)
         void rand_float_container(It left_begin, It left_end, It right_begin, It right_end, It result_begin) {
             for (; left_begin != left_end && right_begin != right_end; ++left_begin, ++right_begin, ++result_begin) {
                 *result_begin = rand_float(*left_begin, *right_begin);
+            }
+        }
+
+        template <typename It>  // Operators required: !=(It, It), ++(It), *(It); Structures required: std::iterator_traits<It>
+        void rand_float_container(const typename std::iterator_traits<It>::value_type& left, const typename std::iterator_traits<It>::value_type& right, It result_begin, It result_end) {
+            for (; result_begin != result_end; ++result_begin) {
+                *result_begin = rand_float(left, right);
             }
         }
 

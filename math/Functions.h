@@ -24,6 +24,6 @@ namespace alg::math {
 
     // ^^^ ---------Functions--------- ^^^
     // -----------------------------------
-} // Functions
+}   // Functions
 
 using namespace alg::math;
