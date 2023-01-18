@@ -118,7 +118,8 @@ namespace alg::data_struct {
             max_queue_.clear();
         }
 
-        friend std::ostream& operator<<(std::ostream& fout, const MaxQueue<VT, PR>& vector) noexcept;
+        template <typename T, typename PRED>
+        friend std::ostream& operator<<(std::ostream& fout, const MaxQueue<T, PRED>& vector) noexcept;
     };
 
     template <typename T, typename PR>

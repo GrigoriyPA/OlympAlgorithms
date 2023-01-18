@@ -7,29 +7,35 @@ namespace alg::func {
     const long double FI = (sqrtl(5.0) - 1.0) / 2.0;
     const long double PI = acosl(-1.0);
 
+
     class AlgDomainError : public std::domain_error {
     public:
-        AlgDomainError(const char* filename, uint32_t line, std::string message) : domain_error("Domain error.\nFilename: " + std::string(filename) + "\nLine: " + std::to_string(line) + "\nDescription: " + message) {
+        AlgDomainError(const char* filename, uint32_t line, std::string message) noexcept :
+            domain_error("Domain error.\nFilename: " + std::string(filename) + "\nLine: " + std::to_string(line) + "\nDescription: " + message) {
         }
     };
 
     class AlgInvalidArgument : public std::invalid_argument {
     public:
-        AlgInvalidArgument(const char* filename, uint32_t line, std::string message) : invalid_argument("Invalid argument error.\nFilename: " + std::string(filename) + "\nLine: " + std::to_string(line) + "\nDescription: " + message) {
+        AlgInvalidArgument(const char* filename, uint32_t line, std::string message) noexcept :
+            invalid_argument("Invalid argument error.\nFilename: " + std::string(filename) + "\nLine: " + std::to_string(line) + "\nDescription: " + message) {
         }
     };
 
     class AlgOutOfRange : public std::out_of_range {
     public:
-        AlgOutOfRange(const char* filename, uint32_t line, std::string message) : out_of_range("Out of range error.\nFilename: " + std::string(filename) + "\nLine: " + std::to_string(line) + "\nDescription: " + message) {
+        AlgOutOfRange(const char* filename, uint32_t line, std::string message) noexcept :
+            out_of_range("Out of range error.\nFilename: " + std::string(filename) + "\nLine: " + std::to_string(line) + "\nDescription: " + message) {
         }
     };
 
     class AlgRuntimeError : public std::runtime_error {
     public:
-        AlgRuntimeError(const char* filename, uint32_t line, std::string message) : runtime_error("Runtime error.\nFilename: " + std::string(filename) + "\nLine: " + std::to_string(line) + "\nDescription: " + message) {
+        AlgRuntimeError(const char* filename, uint32_t line, std::string message) noexcept :
+            runtime_error("Runtime error.\nFilename: " + std::string(filename) + "\nLine: " + std::to_string(line) + "\nDescription: " + message) {
         }
     };
+
 
     template <typename T>  // Operators required: <(T, T), ==(T, T)
     int32_t sgn(const T& x, const T& zero = T(0)) {
@@ -42,17 +48,17 @@ namespace alg::func {
         return 1;
     }
 
-    template <typename T>  // T - numeric type
-    bool equality(const T& left, const T& right, const T& eps = T(EPS)) {
+    template <typename T1, typename T2>  // T1, T2 - standard numeric types
+    bool equality(T1 left, T2 right, long double eps = EPS) {
         return std::abs(left - right) <= eps;
     }
 
-    template <typename T>  // T - numeric type
-    bool less_equality(const T& left, const T& right, const T& eps = T(EPS)) {
+    template <typename T1, typename T2>  // T1, T2 - standard numeric types
+    bool less_equality(T1 left, T2 right, long double eps = EPS) {
         return left < right || equality(left, right, eps);
     }
 
-    template <typename T>
+    template <typename T>  // Operators required: <<(std::stringstream, T)
     std::string to_string(const T& value, std::streamsize precision = 6) {
         std::stringstream str_stream;
         str_stream.precision(precision);
@@ -77,13 +83,13 @@ namespace alg::func {
         return split_str;
     }
 
-    std::vector<std::string> split(const std::string& str, char split_symbol) {
-        return split(str, [&](char symbol) { return symbol == split_symbol; });
+    std::vector<std::string> split(const std::string& str, char split_character) {
+        return split(str, [=](char character) { return character == split_character; });
     }
 
-    std::string make_table(const std::vector<std::vector<std::string>>& description) noexcept {
+    std::string make_table(const std::vector<std::vector<std::string>>& description) {
         size_t max_string_length = 0;
-        for (const auto& str : description) {
+        for (const std::vector<std::string>& str : description) {
             max_string_length = std::max(max_string_length, str.size());
         }
 
@@ -92,10 +98,10 @@ namespace alg::func {
         std::vector<std::vector<std::vector<std::string>>> splited_description(description.size(), std::vector<std::vector<std::string>>(max_string_length));
         for (size_t i = 0; i < description.size(); ++i) {
             for (size_t j = 0; j < description[i].size(); ++j) {
-                splited_description[i][j] = split(description[i][j], [](char charter) { return charter == '\n'; });
+                splited_description[i][j] = split(description[i][j], '\n');
 
                 max_cell_height[i] = std::max(max_cell_height[i], splited_description[i][j].size());
-                for (const auto& str : splited_description[i][j]) {
+                for (const std::string& str : splited_description[i][j]) {
                     max_cell_width[j] = std::max(max_cell_width[j], str.size());
                 }
             }
@@ -112,29 +118,41 @@ namespace alg::func {
                     }
 
                     for (; cur_length < max_cell_width[j]; ++cur_length) {
-                        table += ' ';
+                        table.push_back(' ');
                     }
-                    table += ' ';
+                    table.push_back(' ');
                 }
-                table += '\n';
+                table.push_back('\n');
             }
         }
         return table;
     }
 
+    template <typename T>  // Operators required: <<(std::stringstream, T)
+    std::string make_table(const std::vector<std::vector<T>>& description, std::streamsize precision = 6) {
+        std::vector<std::vector<std::string>> description_strings(description.size());
+        for (size_t i = 0; i < description.size(); ++i) {
+            description_strings[i].resize(description[i].size());
+            for (size_t j = 0; j < description[i].size(); ++j) {
+                description_strings[i][j] = to_string(description[i][j], precision);
+            }
+        }
+        return make_table(description_strings);
+    }
+
     template <typename It>  // Operators required: !=(It, It), ++(It), *(It)
-    std::string make_string(It container_begin, It container_end) {
+    std::string make_string(It container_begin, It container_end, std::streamsize precision = 6) {
         std::vector<std::vector<std::string>> table_description(1);
         for (; container_begin != container_end; ++container_begin) {
-            table_description[0].push_back(to_string(*container_begin));
+            table_description[0].push_back(to_string(*container_begin, precision));
         }
         return make_table(table_description);
     }
     
-    // Up and down string format: "lmr" (l - left symbol, m - middle symbol, r - right symbol)
+    // Up and down string format: "lmr" (l - left symbol, m - middle symbols, r - right symbol)
     std::string make_table_decorated(const std::vector<std::vector<std::string>>& description, bool named_columns = false, const std::string& vertical_sep = std::string(1, char(179)), const std::string& horizontal_sep = std::string(1, char(196)), char vertical_border = char(179), const std::string& up_border = std::string(1, char(218)) + std::string(1, char(196)) + std::string(1, char(191)), const std::string& down_border = std::string(1, char(192)) + std::string(1, char(196)) + std::string(1, char(217))) {
         size_t max_string_length = 0;
-        for (const auto& str : description) {
+        for (const std::vector<std::string>& str : description) {
             max_string_length = std::max(max_string_length, str.size());
         }
 
@@ -143,10 +161,10 @@ namespace alg::func {
         std::vector<std::vector<std::vector<std::string>>> splited_description(description.size(), std::vector<std::vector<std::string>>(max_string_length));
         for (size_t i = 0; i < description.size(); ++i) {
             for (size_t j = 0; j < description[i].size(); ++j) {
-                splited_description[i][j] = split(description[i][j], [](char charter) { return charter == '\n'; });
+                splited_description[i][j] = split(description[i][j], '\n');
 
                 max_cell_height[i] = std::max(max_cell_height[i], splited_description[i][j].size());
-                for (const auto& str : splited_description[i][j]) {
+                for (const std::string& str : splited_description[i][j]) {
                     max_cell_width[j] = std::max(max_cell_width[j], str.size());
                 }
             }
@@ -164,11 +182,13 @@ namespace alg::func {
                 for (size_t j = 0; j < max_cell_width[i]; ++j) {
                     table += up_border[1];
                 }
+
                 if (up_border[1] == char(196) && vertical_sep == std::string(1, char(179)) && i + 1 < max_string_length) {
                     table += up_border[1];
                     table += char(194);
                     table += up_border[1];
-                } else {
+                } 
+                else {
                     for (size_t j = 0; j < 2 + vertical_sep.size() && i + 1 < max_string_length; ++j) {
                         table += up_border[1];
                     }
@@ -207,62 +227,77 @@ namespace alg::func {
 
                 if (vertical_border == char(179) && up_border[1] == char(196)) {
                     table += char(195);
-                } else {
+                } 
+                else {
                     table += vertical_border;
                 }
+
                 table += up_border[1];
                 for (size_t j = 0; j < max_string_length; ++j) {
                     for (size_t k = 0; k < max_cell_width[j]; ++k) {
                         table += up_border[1];
                     }
+
                     if (up_border[1] == char(196) && vertical_sep == std::string(1, char(179)) && j + 1 < max_string_length) {
                         table += up_border[1];
                         table += char(197);
                         table += up_border[1];
-                    } else {
+                    } 
+                    else {
                         for (size_t k = 0; k < 2 + vertical_sep.size() && j + 1 < max_string_length; ++k) {
                             table += up_border[1];
                         }
                     }
                 }
                 table += up_border[1];
+
                 if (vertical_border == char(179) && up_border[1] == char(196)) {
                     table += char(180);
-                } else {
+                } 
+                else {
                     table += vertical_border;
                 }
+
                 table += '\n';
-            } else if (!horizontal_sep.empty() && i + 1 < description.size()) {
+            } 
+            else if (!horizontal_sep.empty() && i + 1 < description.size()) {
                 if (horizontal_sep.size() != 1) {
                     throw AlgInvalidArgument(__FILE__, __LINE__, "make_table_decorated, invalid horizontal sep description");
                 }
 
                 if (vertical_border == char(179) && horizontal_sep == std::string(1, char(196))) {
                     table += char(195);
-                } else {
+                }
+                else {
                     table += vertical_border;
                 }
+
                 table += horizontal_sep;
                 for (size_t j = 0; j < max_string_length; ++j) {
                     for (size_t k = 0; k < max_cell_width[j]; ++k) {
                         table += horizontal_sep;
                     }
+
                     if (j + 1 < max_string_length) {
                         if (horizontal_sep == std::string(1, char(196)) && vertical_sep == std::string(1, char(179))) {
                             table += horizontal_sep;
                             table += char(197);
                             table += horizontal_sep;
-                        } else {
+                        } 
+                        else {
                             table += horizontal_sep + vertical_sep + horizontal_sep;
                         }
                     }
                 }
                 table += horizontal_sep;
+
                 if (vertical_border == char(179) && horizontal_sep == std::string(1, char(196))) {
                     table += char(180);
-                } else {
+                } 
+                else {
                     table += vertical_border;
                 }
+
                 table += '\n';
             }
         }
@@ -278,11 +313,13 @@ namespace alg::func {
                 for (size_t j = 0; j < max_cell_width[i]; ++j) {
                     table += down_border[1];
                 }
+
                 if (down_border[1] == char(196) && vertical_sep == std::string(1, char(179)) && i + 1 < max_string_length) {
                     table += down_border[1];
                     table += char(193);
                     table += down_border[1];
-                } else {
+                }
+                else {
                     for (size_t j = 0; j < 2 + vertical_sep.size() && i + 1 < max_string_length; ++j) {
                         table += down_border[1];
                     }
@@ -294,6 +331,18 @@ namespace alg::func {
         }
 
         return table;
+    }
+
+    template <typename T>  // Operators required: <<(std::stringstream, T); Up and down string format: "lmr" (l - left symbol, m - middle symbols, r - right symbol)
+    std::string make_table_decorated(const std::vector<std::vector<T>>& description, std::streamsize precision = 6, bool named_columns = false, const std::string& vertical_sep = std::string(1, char(179)), const std::string& horizontal_sep = std::string(1, char(196)), char vertical_border = char(179), const std::string& up_border = std::string(1, char(218)) + std::string(1, char(196)) + std::string(1, char(191)), const std::string& down_border = std::string(1, char(192)) + std::string(1, char(196)) + std::string(1, char(217))) {
+        std::vector<std::vector<std::string>> description_strings(description.size());
+        for (size_t i = 0; i < description.size(); ++i) {
+            description_strings[i].resize(description[i].size());
+            for (size_t j = 0; j < description[i].size(); ++j) {
+                description_strings[i][j] = to_string(description[i][j], precision);
+            }
+        }
+        return make_table_decorated(description_strings, named_columns, vertical_sep, horizontal_sep, vertical_border, up_border, down_border);
     }
 
     template <typename T>  // Constructors required: T(T); Operators required: *(T, T), =(T, T)
@@ -309,9 +358,9 @@ namespace alg::func {
         return result;
     }
 
-    template <typename T>  // Structures required: std::hash<T>
-    void hash_combine(size_t& seed, const T& value) {
-        seed ^= std::hash<T>()(value) + 0x9e3779b9 + (seed << 6) + (seed >> 2);
+    template <typename T, class HT = std::hash<T>>  // Structures required: std::hash<T>
+    void hash_combine(size_t& seed, const T& value, const HT& hasher = HT()) {
+        seed ^= hasher(value) + 0x9e3779b9 + (seed << 6) + (seed >> 2);
     }
 
     template <typename It>  // Operators required: !=(It, It), ++(It), *(It); Structures required: std::iterator_traits<It>
@@ -367,7 +416,7 @@ namespace alg::func {
         template <bool HAS_ZIP_MAP, typename T>
         class RandFloatStruct {};
 
-        template <typename T>
+        template <typename T>  // Methods required: T::zip_map
         class RandIntStruct<true, T> {
             Random* random = nullptr;
 
@@ -381,7 +430,7 @@ namespace alg::func {
             }
         };
 
-        template <typename T>
+        template <typename T>  // Methods required: T::zip_map
         class RandFloatStruct<true, T> {
             Random* random = nullptr;
 
@@ -458,11 +507,11 @@ namespace alg::func {
         }
 
     public:
-        explicit Random(uint64_t seed) noexcept {
+        explicit Random(uint64_t seed) {
             generator.seed(seed);
         }
 
-        Random& set_seed(uint64_t seed) noexcept {
+        Random& set_seed(uint64_t seed) {
             generator.seed(seed);
             return *this;
         }

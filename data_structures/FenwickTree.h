@@ -293,7 +293,8 @@ namespace alg::data_struct {
             }
         }
 
-        friend std::ostream& operator<<(std::ostream& fout, const FenwickTree<VT>& vector) noexcept;
+        template <typename T>
+        friend std::ostream& operator<<(std::ostream& fout, const FenwickTree<T>& vector) noexcept;
     };
 
     template <typename T>
