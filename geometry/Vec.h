@@ -3,7 +3,7 @@ namespace alg::geom {
     // vvv ------------Vec2----------- vvv
 
 
-    template <typename VT = long double>  // VT - numeric type
+    template <typename VT = long double>  // VT - standard numeric type
     class Vec2 {
     public:
         VT x = VT(0.0);
@@ -46,8 +46,8 @@ namespace alg::geom {
             return { T(x), T(y) };
         }
 
-        explicit operator std::string() const noexcept {
-            return func::to_string(x) + " " + func::to_string(y);
+        explicit operator std::string() const {
+            return func::to_string(*this);
         }
 
         VT& operator[](size_t index) {
@@ -70,33 +70,33 @@ namespace alg::geom {
             throw func::AlgOutOfRange(__FILE__, __LINE__, "operator[], invalid index.\n\n");
         }
 
-        bool operator==(const Vec2& other) const noexcept {
+        bool operator==(const Vec2<VT>& other) const noexcept {
             return func::equality(x, other.x) && func::equality(y, other.y);
         }
 
-        bool operator!=(const Vec2& other) const noexcept {
-            return !(*this == other);
+        bool operator!=(const Vec2<VT>& other) const noexcept {
+            return !func::equality(x, other.x) || !func::equality(y, other.y);
         }
 
-        Vec2& operator+=(const Vec2& other)& noexcept {
+        Vec2<VT>& operator+=(const Vec2<VT>& other)& noexcept {
             x += other.x;
             y += other.y;
             return *this;
         }
 
-        Vec2& operator-=(const Vec2& other)& noexcept {
+        Vec2<VT>& operator-=(const Vec2<VT>& other)& noexcept {
             x -= other.x;
             y -= other.y;
             return *this;
         }
 
-        Vec2& operator*=(VT other)& noexcept {
+        Vec2<VT>& operator*=(VT other)& noexcept {
             x *= other;
             y *= other;
             return *this;
         }
 
-        Vec2& operator/=(VT other)& {
+        Vec2<VT>& operator/=(VT other)& {
             if (func::equality(other, VT(0.0))) {
                 throw func::AlgDomainError(__FILE__, __LINE__, "operator/=, division by zero.\n\n");
             }
@@ -106,72 +106,72 @@ namespace alg::geom {
             return *this;
         }
 
-        Vec2& operator^=(VT other)& {
-            if (x < 0 || y < 0) {
+        Vec2<VT>& operator^=(VT other)& {
+            if (x < VT(0.0) || y < VT(0.0)) {
                 throw func::AlgDomainError(__FILE__, __LINE__, "operator^=, raising a negative number to a power.\n\n");
             }
 
-            x = pow(x, other);
-            y = pow(y, other);
+            x = std::pow(x, other);
+            y = std::pow(y, other);
             return *this;
         }
 
-        Vec2& operator^=(uint32_t other)& noexcept {
+        Vec2<VT>& operator^=(uint32_t other)& noexcept {
             x = func::binary_exponentiation(x, other);
             y = func::binary_exponentiation(y, other);
             return *this;
         }
 
-        Vec2 operator-() const noexcept {
-            return Vec2(-x, -y);
+        Vec2<VT> operator-() const noexcept {
+            return Vec2<VT>(-x, -y);
         }
 
-        Vec2 operator+(const Vec2& other) const noexcept {
-            return Vec2(x + other.x, y + other.y);
+        Vec2<VT> operator+(const Vec2<VT>& other) const noexcept {
+            return Vec2<VT>(x + other.x, y + other.y);
         }
 
-        Vec2 operator-(const Vec2& other) const noexcept {
-            return Vec2(x - other.x, y - other.y);
+        Vec2<VT> operator-(const Vec2<VT>& other) const noexcept {
+            return Vec2<VT>(x - other.x, y - other.y);
         }
 
-        Vec2 operator*(VT other) const noexcept {
-            return Vec2(x * other, y * other);
+        Vec2<VT> operator*(VT other) const noexcept {
+            return Vec2<VT>(x * other, y * other);
         }
 
-        VT operator*(const Vec2& other) const noexcept {
+        VT operator*(const Vec2<VT>& other) const noexcept {
             return x * other.x + y * other.y;
         }
 
-        VT operator^(const Vec2& other) const noexcept {
+        VT operator^(const Vec2<VT>& other) const noexcept {
             return x * other.y - y * other.x;
         }
 
-        Vec2 operator^(VT other) const {
-            if (x < 0 || y < 0) {
+        Vec2<VT> operator^(VT other) const {
+            if (x < VT(0.0) || y < VT(0.0)) {
                 throw func::AlgDomainError(__FILE__, __LINE__, "operator^, raising a negative number to a power.\n\n");
             }
 
-            return Vec2(pow(x, other), pow(y, other));
+            return Vec2<VT>(std::pow(x, other), std::pow(y, other));
         }
 
-        Vec2 operator^(uint32_t other) const noexcept {
-            return Vec2(func::binary_exponentiation(x, other), func::binary_exponentiation(y, other));
+        Vec2<VT> operator^(uint32_t other) const noexcept {
+            return Vec2<VT>(func::binary_exponentiation(x, other), func::binary_exponentiation(y, other));
         }
 
-        Vec2 operator/(VT other) const {
+        Vec2<VT> operator/(VT other) const {
             if (func::equality(other, VT(0.0))) {
                 throw func::AlgDomainError(__FILE__, __LINE__, "operator/, division by zero.\n\n");
             }
 
-            return Vec2(x / other, y / other);
+            return Vec2<VT>(x / other, y / other);
         }
 
         VT length_sqr() const noexcept {
             return *this * *this;
         }
 
-        long double length() const noexcept {
-            return sqrtl(*this * *this);
+        VT length() const {
+            return VT(std::sqrtl(*this * *this));
         }
 
         VT get_value(std::function<VT(VT, VT)> func) const {
@@ -186,90 +186,91 @@ namespace alg::geom {
             return get_value([&](const VT& left, const VT& right) -> const VT& { return func(left, right); });
         }
 
-        Vec2 normalize() const {
-            long double vect_length = length();
-            if (func::equality(vect_length, static_cast<long double>(0.0))) {
+        Vec2<VT> normalize() const {
+            VT vect_length = length();
+            if (func::equality(vect_length, VT(0.0))) {
                 throw func::AlgDomainError(__FILE__, __LINE__, "normalize, null vector normalization.\n\n");
             }
 
             return *this / vect_length;
         }
 
-        Vec2 reflect_vect(const Vec2& n) const {
-            if (func::equality(n.length(), static_cast<long double>(0.0))) {
+        Vec2<VT> reflect_vect(const Vec2<VT>& n) const {
+            try {
+                const Vec2<VT>& norm = n.normalize();
+                return norm * (norm * *this) * 2 - *this;
+            }
+            catch (func::AlgDomainError) {
                 throw func::AlgDomainError(__FILE__, __LINE__, "reflect_vect, the normal vector has zero length.\n\n");
             }
-
-            Vec2 norm = n.normalize();
-            return norm * (norm * *this) * 2 - *this;
         }
 
-        bool in_angle(const Vec2& v1, const Vec2& v2) const noexcept {
+        bool in_angle(const Vec2<VT>& v1, const Vec2<VT>& v2) const noexcept {
             int32_t sign1 = func::sgn(v1 ^ *this);
             int32_t sign2 = func::sgn(v2 ^ *this);
             int32_t sign3 = func::sgn(v1 ^ v2);
             return (sign1 == 0 || sign1 == sign3) && !(sign2 == 0 || sign2 == -sign3);
         }
 
-        bool in_triangle(const Vec2& v1, const Vec2& v2, const Vec2& v3) const noexcept {
+        bool in_triangle(const Vec2<VT>& v1, const Vec2<VT>& v2, const Vec2<VT>& v3) const noexcept {
             return (*this - v1).in_angle(v2 - v1, v3 - v1) && (*this - v2).in_angle(v1 - v2, v3 - v2);
         }
 
-        Vec2 multiply(const Vec2& other) {
-            return Vec2(x * other.x, y * other.y);
+        Vec2<VT> multiply(const Vec2<VT>& other) const noexcept {
+            return Vec2<VT>(x * other.x, y * other.y);
         }
 
-        Vec2 divide(const Vec2& other) {
+        Vec2<VT> divide(const Vec2<VT>& other) const {
             if (func::equality(other.x, VT(0.0)) || func::equality(other.y, VT(0.0))) {
                 throw func::AlgDomainError(__FILE__, __LINE__, "divide, division by zero.\n\n");
             }
 
-            return Vec2(x / other.x, y / other.y);
+            return Vec2<VT>(x / other.x, y / other.y);
         }
 
-        Vec2& apply_func(std::function<VT(VT)> func) {
+        Vec2<VT>& apply_func(std::function<VT(VT)> func) {
             x = func(x);
             y = func(y);
             return *this;
         }
 
-        Vec2& apply_func(const VT& func(const VT&)) {
+        Vec2<VT>& apply_func(const VT& func(const VT&)) {
             apply_func([&](const VT& value) -> const VT& { return func(value); });
             return *this;
         }
 
-        Vec2& apply_func(VT func(VT)) {
+        Vec2<VT>& apply_func(VT func(VT)) {
             apply_func([&](const VT& value) -> const VT& { return func(value); });
             return *this;
         }
 
-        static long double cos_angle(const Vec2& v1, const Vec2& v2) {
-            long double length_prod = v1.length() * v2.length();
-            if (func::equality(length_prod, static_cast<long double>(0.0))) {
+        static VT cos_angle(const Vec2<VT>& v1, const Vec2<VT>& v2) {
+            VT length_prod = v1.length() * v2.length();
+            if (func::equality(length_prod, VT(0.0))) {
                 throw func::AlgDomainError(__FILE__, __LINE__, "cos_angle, one of the vectors has zero length.\n\n");
             }
 
-            return static_cast<long double>(v1 * v2) / length_prod;
+            return (v1 * v2) / length_prod;
         }
 
-        static long double sin_angle(const Vec2& v1, const Vec2& v2) {
-            long double length_prod = v1.length() * v2.length();
-            if (func::equality(length_prod, static_cast<long double>(0.0))) {
+        static VT sin_angle(const Vec2<VT>& v1, const Vec2<VT>& v2) {
+            VT length_prod = v1.length() * v2.length();
+            if (func::equality(length_prod, VT(0.0))) {
                 throw func::AlgDomainError(__FILE__, __LINE__, "sin_angle, one of the vectors has zero length.\n\n");
             }
 
-            return static_cast<long double>(v1 ^ v2) / length_prod;
+            return (v1 ^ v2) / length_prod;
         }
 
-        static Vec2 zip_map(const Vec2& v1, const Vec2& v2, std::function<VT(VT, VT)> zip_func) {
-            return Vec2(zip_func(v1.x, v2.x), zip_func(v1.y, v2.y));
+        static Vec2<VT> zip_map(const Vec2<VT>& v1, const Vec2<VT>& v2, std::function<VT(VT, VT)> zip_func) {
+            return Vec2<VT>(zip_func(v1.x, v2.x), zip_func(v1.y, v2.y));
         }
 
         template <typename T>  // Casts required: VT(T)
-        static std::vector<Vec2> move_in(size_t size, T* data) {
-            std::vector<Vec2> result(size);
+        static std::vector<Vec2<VT>> move_in(size_t size, T* data) {
+            std::vector<Vec2<VT>> result(size);
             for (size_t i = 0; i < size; ++i) {
-                result[i] = Vec2(VT(data[2 * i]), VT(data[2 * i + 1]));
+                result[i] = Vec2<VT>(VT(data[2 * i]), VT(data[2 * i + 1]));
             }
 
             delete[] data;

@@ -49,12 +49,12 @@ namespace alg::func {
     }
 
     template <typename T1, typename T2>  // T1, T2 - standard numeric types
-    bool equality(T1 left, T2 right, long double eps = EPS) {
+    bool equality(T1 left, T2 right, long double eps = EPS) noexcept {
         return std::abs(left - right) <= eps;
     }
 
     template <typename T1, typename T2>  // T1, T2 - standard numeric types
-    bool less_equality(T1 left, T2 right, long double eps = EPS) {
+    bool less_equality(T1 left, T2 right, long double eps = EPS) noexcept {
         return left < right || equality(left, right, eps);
     }
 
@@ -474,7 +474,7 @@ namespace alg::func {
 
         std::mt19937_64 generator;
 
-        long double rand() noexcept {
+        long double rand() {
             return static_cast<long double>(generator()) / static_cast<long double>(generator.max());
         }
 
