@@ -6,3 +6,4 @@
 
 #include "FenwickTree.h"
 #include "MaxQueue.h"
+#include "HashTable.h"

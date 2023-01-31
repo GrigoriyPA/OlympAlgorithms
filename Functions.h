@@ -4,34 +4,34 @@ namespace alg::func {
 
 
     const long double EPS = 1e-7;
-    const long double FI = (sqrtl(5.0) - 1.0) / 2.0;
-    const long double PI = acosl(-1.0);
+    const long double FI = (std::sqrtl(5.0) - 1.0) / 2.0;
+    const long double PI = std::acosl(-1.0);
 
 
     class AlgDomainError : public std::domain_error {
     public:
-        AlgDomainError(const char* filename, uint32_t line, std::string message) noexcept :
+        AlgDomainError(const char* filename, uint32_t line, const std::string& message) noexcept :
             domain_error("Domain error.\nFilename: " + std::string(filename) + "\nLine: " + std::to_string(line) + "\nDescription: " + message) {
         }
     };
 
     class AlgInvalidArgument : public std::invalid_argument {
     public:
-        AlgInvalidArgument(const char* filename, uint32_t line, std::string message) noexcept :
+        AlgInvalidArgument(const char* filename, uint32_t line, const std::string& message) noexcept :
             invalid_argument("Invalid argument error.\nFilename: " + std::string(filename) + "\nLine: " + std::to_string(line) + "\nDescription: " + message) {
         }
     };
 
     class AlgOutOfRange : public std::out_of_range {
     public:
-        AlgOutOfRange(const char* filename, uint32_t line, std::string message) noexcept :
+        AlgOutOfRange(const char* filename, uint32_t line, const std::string& message) noexcept :
             out_of_range("Out of range error.\nFilename: " + std::string(filename) + "\nLine: " + std::to_string(line) + "\nDescription: " + message) {
         }
     };
 
     class AlgRuntimeError : public std::runtime_error {
     public:
-        AlgRuntimeError(const char* filename, uint32_t line, std::string message) noexcept :
+        AlgRuntimeError(const char* filename, uint32_t line, const std::string& message) noexcept :
             runtime_error("Runtime error.\nFilename: " + std::string(filename) + "\nLine: " + std::to_string(line) + "\nDescription: " + message) {
         }
     };
