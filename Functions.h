@@ -573,6 +573,6 @@ namespace alg::func {
 
     // ^^^ -----------Random---------- ^^^
     // -----------------------------------
-}   // Functions, Random
+}   // Functions, Random | Version: 1.0
 
 using namespace alg::func;

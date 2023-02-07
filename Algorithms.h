@@ -14,3 +14,5 @@
 #include "strings/Strings.h"
 #include "geometry/Geometry.h"
 #include "data_structures/DataStructures.h"
+
+// Version: 1.0

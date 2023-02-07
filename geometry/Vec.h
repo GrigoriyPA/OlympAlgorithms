@@ -666,6 +666,6 @@ namespace alg::geom {
 
     // ^^^ ------------Vec3----------- ^^^
     // -----------------------------------
-}   // Vec2, Vec3
+}   // Vec2, Vec3 | Version: 1.0
 
 using namespace alg::geom;

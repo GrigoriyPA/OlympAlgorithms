@@ -3,7 +3,7 @@ namespace alg::geom {
     // vvv ---------MatrixLine-------- vvv
 
 
-    template <typename VT = long double>  // VT - numeric type
+    template <typename VT = long double>  // VT - standard numeric type
     class MatrixLine {
         template <typename T>
         friend class Matrix;
@@ -14,7 +14,7 @@ namespace alg::geom {
         MatrixLine(const std::initializer_list<T>& init) {
             line_.reserve(init.size());
             for (const T& element : init) {
-                line_.push_back(VT(element));
+                line_.emplace_back(element);
             }
         }
 
@@ -22,11 +22,11 @@ namespace alg::geom {
         explicit MatrixLine(const std::vector<T>& init) {
             line_.reserve(init.size());
             for (const T& element : init) {
-                line_.push_back(VT(element));
+                line_.emplace_back(element);
             }
         }
 
-        explicit MatrixLine(size_t count_columns, VT value = VT(0.0)) noexcept {
+        explicit MatrixLine(size_t count_columns, VT value = VT(0.0)) {
             line_.resize(count_columns, value);
         }
 
@@ -34,8 +34,9 @@ namespace alg::geom {
         template <typename T>  // Constructors required: T(T), T(VT)
         explicit operator std::vector<T>() const {
             std::vector<T> result;
-            for (const VT& element : line_) {
-                result.push_back(element);
+            result.reserve(line_.size());
+            for (VT element : line_) {
+                result.emplace_back(element);
             }
             return result;
         }
@@ -56,7 +57,7 @@ namespace alg::geom {
             return line_[index];
         }
 
-        MatrixLine& operator=(const MatrixLine& other)& {
+        MatrixLine<VT>& operator=(const MatrixLine<VT>& other)& {
             if (line_.size() != other.size()) {
                 throw func::AlgInvalidArgument(__FILE__, __LINE__, "operator=, invalid line sizes.\n\n");
             }
@@ -65,7 +66,7 @@ namespace alg::geom {
             return *this;
         }
 
-        bool operator==(const MatrixLine& other) const noexcept {
+        bool operator==(const MatrixLine<VT>& other) const noexcept {
             if (line_.size() != other.line_.size()) {
                 return false;
             }
@@ -78,52 +79,60 @@ namespace alg::geom {
             return true;
         }
 
-        bool operator!=(const MatrixLine& other) const noexcept {
+        bool operator!=(const MatrixLine<VT>& other) const noexcept {
             return !(*this == other);
         }
 
-        MatrixLine& operator+=(const MatrixLine& other)& {
+        MatrixLine<VT>& operator+=(const MatrixLine<VT>& other)& {
             if (line_.size() != other.size()) {
                 throw func::AlgInvalidArgument(__FILE__, __LINE__, "operator+=, invalid line sizes.\n\n");
             }
 
-            *this = *this + other;
+            for (size_t i = 0; i < line_.size(); ++i) {
+                line_[i] += other[i];
+            }
             return *this;
         }
 
-        MatrixLine& operator-=(const MatrixLine& other)& {
+        MatrixLine<VT>& operator-=(const MatrixLine<VT>& other)& {
             if (line_.size() != other.size()) {
                 throw func::AlgInvalidArgument(__FILE__, __LINE__, "operator-=, invalid line sizes.\n\n");
             }
 
-            *this = *this - other;
+            for (size_t i = 0; i < line_.size(); ++i) {
+                line_[i] -= other[i];
+            }
             return *this;
         }
 
-        MatrixLine& operator*=(VT other) & noexcept {
-            *this = *this * other;
+        MatrixLine<VT>& operator*=(VT other)& noexcept {
+            for (VT& element : line_) {
+                element *= other;
+            }
             return *this;
         }
 
-        MatrixLine& operator/=(VT other)& {
+        MatrixLine<VT>& operator/=(VT other)& {
             if (func::equality(other, VT(0.0))) {
                 throw func::AlgDomainError(__FILE__, __LINE__, "operator/=, division by zero.\n\n");
             }
 
-            *this = *this / other;
+            for (VT& element : line_) {
+                element /= other;
+            }
             return *this;
         }
 
-        MatrixLine operator-() const noexcept {
-            return *this * -1;
+        MatrixLine<VT> operator-() const {
+            return *this * VT(-1.0);
         }
 
-        MatrixLine operator+(const MatrixLine& other) const {
+        MatrixLine<VT> operator+(const MatrixLine<VT>& other) const {
             if (line_.size() != other.size()) {
                 throw func::AlgInvalidArgument(__FILE__, __LINE__, "operator+, invalid line sizes.\n\n");
             }
 
-            MatrixLine result = *this;
+            MatrixLine<VT> result = *this;
             for (size_t i = 0; i < other.size(); ++i) {
                 result[i] += other[i];
             }
@@ -131,12 +140,12 @@ namespace alg::geom {
             return result;
         }
 
-        MatrixLine operator-(const MatrixLine& other) const {
+        MatrixLine<VT> operator-(const MatrixLine<VT>& other) const {
             if (line_.size() != other.size()) {
                 throw func::AlgInvalidArgument(__FILE__, __LINE__, "operator-, invalid line sizes.\n\n");
             }
 
-            MatrixLine result = *this;
+            MatrixLine<VT> result = *this;
             for (size_t i = 0; i < other.size(); ++i) {
                 result[i] -= other[i];
             }
@@ -144,27 +153,24 @@ namespace alg::geom {
             return result;
         }
 
-        MatrixLine operator*(VT other) const noexcept {
-            MatrixLine result = *this;
-            for (VT& element : result.line_) {
-                element *= other;
-            }
-            return result;
+        MatrixLine<VT> operator*(VT other) const {
+            MatrixLine<VT> result = *this;
+            return result *= other;
         }
 
-        MatrixLine operator/(VT other) const {
+        MatrixLine<VT> operator/(VT other) const {
             if (func::equality(other, VT(0.0))) {
                 throw func::AlgDomainError(__FILE__, __LINE__, "operator/, division by zero.\n\n");
             }
 
-            MatrixLine result = *this;
+            MatrixLine<VT> result = *this;
             for (VT& element : result.line_) {
                 element /= other;
             }
             return result;
         }
 
-        VT operator*(const MatrixLine& other) const {
+        VT operator*(const MatrixLine<VT>& other) const {
             if (line_.size() != other.size()) {
                 throw func::AlgInvalidArgument(__FILE__, __LINE__, "operator*, invalid line sizes.\n\n");
             }
@@ -181,12 +187,8 @@ namespace alg::geom {
                 throw func::AlgOutOfRange(__FILE__, __LINE__, "get_value, called from empty line.\n\n");
             }
 
-            if (line_.size() == 1) {
-                return line_[0];
-            }
-
-            VT result = func(line_[0], line_[1]);
-            for (size_t i = 2; i < line_.size(); ++i) {
+            VT result = line_[0];
+            for (size_t i = 1; i < line_.size(); ++i) {
                 result = func(result, line_[i]);
             }
             return result;
@@ -224,12 +226,12 @@ namespace alg::geom {
             return line_.size();
         }
 
-        MatrixLine multiply(const MatrixLine& other) {
+        MatrixLine<VT> multiply(const MatrixLine<VT>& other) const {
             if (line_.size() != other.size()) {
                 throw func::AlgInvalidArgument(__FILE__, __LINE__, "multiply, invalid line sizes.\n\n");
             }
 
-            MatrixLine result = *this;
+            MatrixLine<VT> result = *this;
             for (size_t i = 0; i < other.size(); ++i) {
                 result[i] *= other[i];
             }
@@ -237,12 +239,12 @@ namespace alg::geom {
             return result;
         }
 
-        MatrixLine divide(const MatrixLine& other) {
+        MatrixLine<VT> divide(const MatrixLine<VT>& other) const {
             if (line_.size() != other.size()) {
                 throw func::AlgInvalidArgument(__FILE__, __LINE__, "divide, invalid line sizes.\n\n");
             }
 
-            MatrixLine result = *this;
+            MatrixLine<VT> result = *this;
             for (size_t i = 0; i < other.size(); ++i) {
                 if (func::equality(other[i], VT(0.0))) {
                     throw func::AlgDomainError(__FILE__, __LINE__, "divide, division by zero.\n\n");
@@ -254,34 +256,31 @@ namespace alg::geom {
             return result;
         }
 
-        MatrixLine& apply_func(std::function<VT(VT)> func) {
+        void apply_func(std::function<VT(VT)> func) {
             for (size_t i = 0; i < line_.size(); ++i) {
                 line_[i] = func(line_[i]);
             }
-            return *this;
         }
 
-        MatrixLine& apply_func(const VT& func(const VT&)) {
+        void apply_func(const VT& func(const VT&)) {
             apply_func([&](const VT& value) -> const VT& { return func(value); });
-            return *this;
         }
 
-        MatrixLine& apply_func(VT func(VT)) {
+        void apply_func(VT func(VT)) {
             apply_func([&](const VT& value) -> const VT& { return func(value); });
-            return *this;
         }
 
-        void swap(MatrixLine& other) {
+        void swap(MatrixLine<VT>& other) {
             if (line_.size() != other.size()) {
                 throw func::AlgInvalidArgument(__FILE__, __LINE__, "swap, invalid line sizes.\n\n");
             }
 
-            std::swap(line_, other.line_);
+            line_.swap(other.line_);
         }
     };
 
     template <typename T>
-    std::ostream& operator<<(std::ostream& fout, const MatrixLine<T>& matrix_line) noexcept {
+    std::ostream& operator<<(std::ostream& fout, const MatrixLine<T>& matrix_line) {
         std::vector<std::vector<std::string>> description(1, std::vector<std::string>(matrix_line.size()));
         for (size_t i = 0; i < matrix_line.size(); ++i) {
             description[0][i] = func::to_string(matrix_line[i]);
@@ -291,8 +290,8 @@ namespace alg::geom {
         return fout;
     }
 
-    template <typename T1, typename T2>
-    MatrixLine<T1> operator*(T2 value, const MatrixLine<T1>& matrix) noexcept {
+    template <typename T>
+    MatrixLine<T> operator*(T value, const MatrixLine<T>& matrix) {
         return matrix * value;
     }
 
@@ -302,7 +301,7 @@ namespace alg::geom {
     // vvv -----------Matrix---------- vvv
 
 
-    template <typename VT = long double>  // VT - numeric type
+    template <typename VT = long double>  // VT - standard numeric type
     class Matrix {
         std::vector<MatrixLine<VT>> matrix_;
 
@@ -362,16 +361,16 @@ namespace alg::geom {
             }
         }
 
-        Matrix(const Vec3<VT>& vector_x, const Vec3<VT>& vector_y, const Vec3<VT>& vector_z) noexcept {
-            *this = Matrix({
+        Matrix(const Vec3<VT>& vector_x, const Vec3<VT>& vector_y, const Vec3<VT>& vector_z) {
+            *this = Matrix<VT>({
                 { vector_x.x, vector_y.x, vector_z.x, VT(0.0) },
                 { vector_x.y, vector_y.y, vector_z.y, VT(0.0) },
                 { vector_x.z, vector_y.z, vector_z.z, VT(0.0) },
                 {    VT(0.0),    VT(0.0),    VT(0.0), VT(1.0) },
-                });
+            });
         }
 
-        Matrix(size_t count_lines, size_t count_columns, VT value, const Matrix& init) noexcept {
+        Matrix(size_t count_lines, size_t count_columns, VT value, const Matrix<VT>& init) {
             matrix_.resize(count_lines, MatrixLine<VT>(count_columns, value));
             for (size_t i = 0; i < std::min(count_lines, init.count_strings()); ++i) {
                 for (size_t j = 0; j < std::min(count_columns, init.count_columns()); ++j) {
@@ -380,25 +379,12 @@ namespace alg::geom {
             }
         }
 
-        Matrix(size_t count_lines, size_t count_columns, VT value = VT(0.0)) noexcept {
+        Matrix(size_t count_lines, size_t count_columns, VT value = VT(0.0)) {
             matrix_.resize(count_lines, MatrixLine<VT>(count_columns, value));
         }
 
-        Matrix(size_t count_lines, const MatrixLine<VT>& value) noexcept {
+        Matrix(size_t count_lines, const MatrixLine<VT>& value) {
             matrix_.resize(count_lines, value);
-        }
-
-        // Identity matrix with init part replaced
-        Matrix(size_t count_lines, size_t count_columns, const Matrix& init) noexcept {
-            matrix_.resize(count_lines, MatrixLine<VT>(count_columns, VT(0.0)));
-            for (size_t i = 0; i < std::min(count_lines, count_columns); ++i) {
-                matrix_[i][i] = VT(1.0);
-            }
-            for (size_t i = 0; i < std::min(count_lines, init.count_strings()); ++i) {
-                for (size_t j = 0; j < std::min(count_columns, init.count_columns()); ++j) {
-                    matrix_[i][j] = init[i][j];
-                }
-            }
         }
 
         template <typename T>  // Constructors required: T(VT)
@@ -407,7 +393,7 @@ namespace alg::geom {
             result.reserve(matrix_.size() * count_columns());
             for (size_t j = 0; j < count_columns(); ++j) {
                 for (size_t i = 0; i < matrix_.size(); ++i) {
-                    result.push_back(T(matrix_[i][j]));
+                    result.emplace_back(matrix_[i][j]);
                 }
             }
             return result;
@@ -429,67 +415,79 @@ namespace alg::geom {
             return matrix_[index];
         }
 
-        bool operator==(const Matrix& other) const noexcept {
-            if (matrix_.size() != other.count_strings() || count_columns() != other.count_columns()) {
+        bool operator==(const Matrix<VT>& other) const noexcept {
+            if (matrix_.size() != other.count_strings()) {
                 return false;
             }
 
             for (size_t i = 0; i < matrix_.size(); ++i) {
-                for (size_t j = 0; j < matrix_[i].size(); ++j) {
-                    if (!func::equality(matrix_[i][j], other[i][j])) {
-                        return false;
-                    }
+                if (matrix_[i] != other[i]) {
+                    return false;
                 }
             }
             return true;
         }
 
-        bool operator!=(const Matrix& other) const noexcept {
+        bool operator!=(const Matrix<VT>& other) const noexcept {
             return !(*this == other);
         }
 
-        Matrix& operator+=(const Matrix& other)& {
+        Matrix<VT>& operator+=(const Matrix<VT>& other)& {
             if (matrix_.size() != other.count_strings() || count_columns() != other.count_columns()) {
                 throw func::AlgInvalidArgument(__FILE__, __LINE__, "operator+=, invalid matrix sizes.\n\n");
             }
 
-            *this = *this + other;
+            for (size_t i = 0; i < matrix_.size(); i++) {
+                matrix_[i] += other[i];
+            }
             return *this;
         }
 
-        Matrix& operator-=(const Matrix& other)& {
+        Matrix<VT>& operator-=(const Matrix<VT>& other)& {
             if (matrix_.size() != other.count_strings() || count_columns() != other.count_columns()) {
                 throw func::AlgInvalidArgument(__FILE__, __LINE__, "operator-=, invalid matrix sizes.\n\n");
             }
 
-            *this = *this - other;
+            for (size_t i = 0; i < matrix_.size(); i++) {
+                matrix_[i] -= other[i];
+            }
             return *this;
         }
 
-        Matrix& operator*=(VT other)& noexcept {
-            *this = *this * other;
+        Matrix<VT>& operator*=(VT other)& noexcept {
+            for (size_t i = 0; i < matrix_.size(); i++) {
+                matrix_[i] *= other;
+            }
             return *this;
         }
 
-        Matrix& operator*=(const Matrix& other)& {
+        Matrix<VT>& operator*=(const Matrix<VT>& other)& {
             if (count_columns() != other.count_strings()) {
                 throw func::AlgInvalidArgument(__FILE__, __LINE__, "operator*=, invalid matrix sizes.\n\n");
             }
 
-            *this = *this * other;
-            return *this;
+            const Matrix<VT>& transposed = other.transpose();
+            Matrix<VT> result(matrix_.size(), other.count_columns(), VT(0.0));
+            for (size_t i = 0; i < matrix_.size(); ++i) {
+                for (size_t j = 0; j < other.count_columns(); ++j) {
+                    result[i][j] = matrix_[i] * transposed[j];
+                }
+            }
+            return *this = result;
         }
 
-        Matrix& operator/=(VT other)& {
+        Matrix<VT>& operator/=(VT other)& {
             if (func::equality(other, VT(0.0))) {
                 throw func::AlgDomainError(__FILE__, __LINE__, "operator/=, division by zero.\n\n");
             }
 
-            *this = *this / other;
+            for (size_t i = 0; i < matrix_.size(); i++) {
+                matrix_[i] /= other;
+            }
             return *this;
         }
 
-        Matrix& operator/=(const Matrix& other)& {
+        Matrix<VT>& operator/=(const Matrix<VT>& other)& {
             try {
                 *this *= other.inverse();
             }
@@ -499,67 +497,71 @@ namespace alg::geom {
             return *this;
         }
 
-        Matrix& operator^=(uint32_t other)& {
+        Matrix<VT>& operator^=(uint32_t other)& {
             if (matrix_.size() != count_columns()) {
                 throw func::AlgInvalidArgument(__FILE__, __LINE__, "operator^=, invalid matrix size.\n\n");
             }
 
-            *this = *this ^ other;
-            return *this;
+            return *this = func::binary_exponentiation(*this, other, one_matrix(matrix_.size()));
         }
 
-        Matrix& operator|=(const Matrix& other)& {
+        Matrix<VT>& operator|=(const Matrix<VT>& other)& {
             if (matrix_.size() != other.count_strings()) {
                 throw func::AlgInvalidArgument(__FILE__, __LINE__, "operator|=, invalid matrix sizes.\n\n");
             }
 
-            *this = *this | other;
+            for (size_t i = 0; i < matrix_.size(); ++i) {
+                matrix_[i].line_.reserve(count_columns() + other.count_columns());
+                for (size_t j = 0; j < other.count_columns(); ++j) {
+                    matrix_[i].line_.push_back(other[i][j]);
+                }
+            }
             return *this;
         }
 
-        Matrix operator-() const noexcept {
-            Matrix result = *this;
-            for (size_t i = 0; i < matrix_.size(); i++) {
-                result[i] *= -1;
-            }
-            return result;
+        Matrix<VT> operator-() const {
+            return *this * VT(-1.0);
         }
 
-        Matrix operator+(const Matrix& other) const {
+        Matrix<VT> operator+(const Matrix<VT>& other) const {
             if (matrix_.size() != other.count_strings() || count_columns() != other.count_columns()) {
                 throw func::AlgInvalidArgument(__FILE__, __LINE__, "operator+, invalid matrix sizes.\n\n");
             }
 
-            Matrix result = *this;
+            Matrix<VT> result = *this;
             for (size_t i = 0; i < matrix_.size(); i++) {
                 result[i] += other[i];
             }
             return result;
         }
 
-        Matrix operator-(const Matrix& other) const {
+        Matrix<VT> operator-(const Matrix<VT>& other) const {
             if (matrix_.size() != other.count_strings() || count_columns() != other.count_columns()) {
                 throw func::AlgInvalidArgument(__FILE__, __LINE__, "operator-, invalid matrix sizes.\n\n");
             }
 
-            return *this + (-other);
+            Matrix<VT> result = *this;
+            for (size_t i = 0; i < matrix_.size(); i++) {
+                result[i] -= other[i];
+            }
+            return result;
         }
 
-        Matrix operator*(VT other) const noexcept {
-            Matrix result = *this;
+        Matrix<VT> operator*(VT other) const {
+            Matrix<VT> result = *this;
             for (size_t i = 0; i < matrix_.size(); i++) {
                 result[i] *= other;
             }
             return result;
         }
 
-        Matrix operator*(const Matrix& other) const {
+        Matrix<VT> operator*(const Matrix<VT>& other) const {
             if (count_columns() != other.count_strings()) {
                 throw func::AlgInvalidArgument(__FILE__, __LINE__, "operator*, invalid matrix sizes.\n\n");
             }
 
-            Matrix transposed = other.transpose();
-            Matrix result(matrix_.size(), other.count_columns(), 0);
+            const Matrix<VT>& transposed = other.transpose();
+            Matrix<VT> result(matrix_.size(), other.count_columns(), VT(0.0));
             for (size_t i = 0; i < matrix_.size(); ++i) {
                 for (size_t j = 0; j < other.count_columns(); ++j) {
                     result[i][j] = matrix_[i] * transposed[j];
@@ -583,15 +585,19 @@ namespace alg::geom {
             return result;
         }
 
-        Matrix operator/(VT other) const {
+        Matrix<VT> operator/(VT other) const {
             if (func::equality(other, VT(0.0))) {
                 throw func::AlgDomainError(__FILE__, __LINE__, "operator/, division by zero.\n\n");
             }
 
-            return *this * (1.0 / other);
+            Matrix<VT> result = *this;
+            for (size_t i = 0; i < matrix_.size(); i++) {
+                result[i] /= other;
+            }
+            return result;
         }
 
-        Matrix operator/(const Matrix& other) const {
+        Matrix<VT> operator/(const Matrix<VT>& other) const {
             try {
                 return *this * other.inverse();
             }
@@ -600,7 +606,7 @@ namespace alg::geom {
             }
         }
 
-        Matrix operator^(uint32_t other) const {
+        Matrix<VT> operator^(uint32_t other) const {
             if (matrix_.size() != count_columns()) {
                 throw func::AlgInvalidArgument(__FILE__, __LINE__, "operator^, invalid matrix size.\n\n");
             }
@@ -608,12 +614,12 @@ namespace alg::geom {
             return func::binary_exponentiation(*this, other, one_matrix(matrix_.size()));
         }
 
-        Matrix operator|(const Matrix& other) const {
+        Matrix<VT> operator|(const Matrix<VT>& other) const {
             if (matrix_.size() != other.count_strings()) {
                 throw func::AlgInvalidArgument(__FILE__, __LINE__, "operator|, invalid matrix sizes.\n\n");
             }
 
-            Matrix result(matrix_.size(), count_columns() + other.count_columns(), *this);
+            Matrix<VT> result(matrix_.size(), count_columns() + other.count_columns(), VT(0), *this);
             for (size_t i = 0; i < matrix_.size(); ++i) {
                 for (size_t j = 0; j < other.count_columns(); ++j) {
                     result[i][count_columns() + j] = other[i][j];
@@ -622,27 +628,26 @@ namespace alg::geom {
             return result;
         }
 
-        Matrix multiply(const Matrix& other) {
+        Matrix<VT> multiply(const Matrix<VT>& other) const {
             if (count_strings() != other.count_strings() || count_columns() != other.count_columns()) {
                 throw func::AlgInvalidArgument(__FILE__, __LINE__, "multiply, invalid matrix sizes.\n\n");
             }
 
-            Matrix result = *this;
+            Matrix<VT> result = *this;
             for (size_t i = 0; i < matrix_.size(); ++i) {
                 for (size_t j = 0; j < matrix_[i].size(); ++j) {
                     result[i][j] *= other[i][j];
                 }
             }
-
             return result;
         }
 
-        Matrix divide(const Matrix& other) {
+        Matrix<VT> divide(const Matrix<VT>& other) const {
             if (count_strings() != other.count_strings() || count_columns() != other.count_columns()) {
                 throw func::AlgInvalidArgument(__FILE__, __LINE__, "divide, invalid matrix sizes.\n\n");
             }
 
-            Matrix result = *this;
+            Matrix<VT> result = *this;
             for (size_t i = 0; i < matrix_.size(); ++i) {
                 for (size_t j = 0; j < matrix_[i].size(); ++j) {
                     if (func::equality(other[i][j], VT(0.0))) {
@@ -661,10 +666,6 @@ namespace alg::geom {
                 throw func::AlgOutOfRange(__FILE__, __LINE__, "get_value, called from empty matrix.\n\n");
             }
 
-            if (count_strings() == 1 && count_columns() == 1) {
-                return matrix_[0][0];
-            }
-
             VT result = matrix_[0][0];
             bool initialized = false;
             for (size_t i = 0; i < matrix_.size(); ++i) {
@@ -677,7 +678,6 @@ namespace alg::geom {
                     result = func(result, matrix_[i][j]);
                 }
             }
-
             return result;
         }
 
@@ -690,7 +690,7 @@ namespace alg::geom {
         }
 
         // axis = 0: horizontal; axis = 1: vertical
-        Matrix get_value(std::function<VT(VT, VT)> func, bool axis) const {
+        Matrix<VT> get_value(std::function<VT(VT, VT)> func, bool axis) const {
             if (matrix_.empty()) {
                 throw func::AlgOutOfRange(__FILE__, __LINE__, "get_value, called from empty matrix.\n\n");
             }
@@ -715,12 +715,12 @@ namespace alg::geom {
         }
 
         // axis = 0: horizontal; axis = 1: vertical
-        Matrix get_value(const VT& func(const VT&, const VT&), bool axis) const {
+        Matrix<VT> get_value(const VT& func(const VT&, const VT&), bool axis) const {
             return get_value([&](const VT& left, const VT& right) -> const VT& { return func(left, right); }, axis);
         }
 
         // axis = 0: horizontal; axis = 1: vertical
-        Matrix get_value(VT func(VT, VT), bool axis) const {
+        Matrix<VT> get_value(VT func(VT, VT), bool axis) const {
             return get_value([&](const VT& left, const VT& right) -> const VT& { return func(left, right); }, axis);
         }
 
@@ -739,27 +739,28 @@ namespace alg::geom {
             return matrix_.empty();
         }
 
-        Matrix& apply_func(std::function<VT(VT)> func) {
+        void apply_func(std::function<VT(VT)> func) {
             for (size_t i = 0; i < matrix_.size(); ++i) {
                 for (size_t j = 0; j < matrix_[i].size(); ++j) {
                     matrix_[i][j] = func(matrix_[i][j]);
                 }
             }
-            return *this;
         }
 
-        Matrix& apply_func(const VT& func(const VT&)) {
+        void apply_func(const VT& func(const VT&)) {
             apply_func([&](const VT& value) -> const VT& { return func(value); });
-            return *this;
         }
 
-        Matrix& apply_func(VT func(VT)) {
+        void apply_func(VT func(VT)) {
             apply_func([&](const VT& value) -> const VT& { return func(value); });
-            return *this;
         }
 
-        Matrix transpose() const noexcept {
-            Matrix result(count_columns(), matrix_.size());
+        void swap(Matrix<VT>& other) noexcept {
+            matrix_.swap(other.matrix_);
+        }
+
+        Matrix<VT> transpose() const {
+            Matrix<VT> result(count_columns(), matrix_.size());
             for (size_t i = 0; i < matrix_.size(); ++i) {
                 for (size_t j = 0; j < matrix_[i].size(); ++j) {
                     result[j][i] = matrix_[i][j];
@@ -768,8 +769,8 @@ namespace alg::geom {
             return result;
         }
 
-        Matrix flip_horizontally() const noexcept {
-            Matrix result(matrix_.size(), count_columns());
+        Matrix<VT> flip_horizontally() const {
+            Matrix<VT> result(matrix_.size(), count_columns());
             for (size_t i = 0; i < matrix_.size(); ++i) {
                 for (size_t j = 0; j < matrix_[i].size(); ++j) {
                     result[matrix_.size() - 1 - i][j] = matrix_[i][j];
@@ -778,8 +779,8 @@ namespace alg::geom {
             return result;
         }
 
-        Matrix flip_vertically() const noexcept {
-            Matrix result(matrix_.size(), count_columns());
+        Matrix<VT> flip_vertically() const {
+            Matrix<VT> result(matrix_.size(), count_columns());
             for (size_t i = 0; i < matrix_.size(); ++i) {
                 for (size_t j = 0; j < matrix_[i].size(); ++j) {
                     result[i][matrix_[i].size() - 1 - j] = matrix_[i][j];
@@ -788,20 +789,20 @@ namespace alg::geom {
             return result;
         }
 
-        Matrix rotate_clockwise() const noexcept {
+        Matrix<VT> rotate_clockwise() const {
             return flip_horizontally().transpose();
         }
 
-        Matrix rotate_counterclockwise() const noexcept {
+        Matrix<VT> rotate_counterclockwise() const {
             return flip_vertically().transpose();
         }
 
-        Matrix submatrix(size_t line, size_t column, size_t height, size_t width) const {
+        Matrix<VT> submatrix(size_t line, size_t column, size_t height, size_t width) const {
             if (line + height > matrix_.size() || column + width > count_columns()) {
                 throw func::AlgInvalidArgument(__FILE__, __LINE__, "submatrix, invalid submatrix size.\n\n");
             }
 
-            Matrix result(height, width);
+            Matrix<VT> result(height, width);
             for (size_t i = 0; i < height; ++i) {
                 for (size_t j = 0; j < width; ++j) {
                     result[i][j] = matrix_[line + i][column + j];
@@ -810,8 +811,8 @@ namespace alg::geom {
             return result;
         }
 
-        Matrix improved_step_view() const noexcept {
-            Matrix result = *this;
+        Matrix<VT> improved_step_view() const {
+            Matrix<VT> result = *this;
             for (size_t j = 0, i0 = 0; j < count_columns() && i0 < matrix_.size(); ++j) {
                 size_t k = matrix_.size();
                 for (size_t i = i0; i < matrix_.size(); ++i) {
@@ -845,7 +846,7 @@ namespace alg::geom {
             }
 
             VT result(1.0);
-            Matrix cur_matrix = *this;
+            Matrix<VT> cur_matrix = *this;
             for (size_t j = 0; j < count_columns(); ++j) {
                 size_t k = matrix_.size();
                 for (size_t i = j; i < matrix_.size(); ++i) {
@@ -860,7 +861,7 @@ namespace alg::geom {
                 }
 
                 if (k != j) {
-                    result *= -1;
+                    result *= VT(-1.0);
                     cur_matrix[j].swap(cur_matrix[k]);
                 }
 
@@ -872,25 +873,25 @@ namespace alg::geom {
             return result;
         }
 
-        Matrix inverse() const {
+        Matrix<VT> inverse() const {
             if (matrix_.size() != count_columns()) {
                 throw func::AlgDomainError(__FILE__, __LINE__, "inverse, not a square matrix.\n\n");
             }
 
-            Matrix result = (*this | one_matrix(matrix_.size())).improved_step_view();
+            Matrix<VT> result = (*this | one_matrix(matrix_.size())).improved_step_view();
             if (result.submatrix(0, 0, matrix_.size(), matrix_.size()) != one_matrix(matrix_.size())) {
                 throw func::AlgDomainError(__FILE__, __LINE__, "inverse, the matrix is not invertible.\n\n");
             }
             return result.submatrix(0, matrix_.size(), matrix_.size(), matrix_.size());
         }
 
-        Matrix solve_equation(const Matrix& value) const {
+        Matrix<VT> solve_equation(const Matrix<VT>& value) const {
             if (value.count_columns() != 1 || matrix_.size() != value.count_strings()) {
                 throw func::AlgDomainError(__FILE__, __LINE__, "solve_equation, invalid matrix size.\n\n");
             }
 
-            Matrix isv_matrix = (*this | Matrix(value)).improved_step_view();
-            Matrix result(count_columns(), 1, VT(0));
+            Matrix<VT> isv_matrix = (*this | Matrix<VT>(value)).improved_step_view();
+            Matrix<VT> result(count_columns(), 1, VT(0.0));
             for (size_t i = 0, j = 0; i < matrix_.size(); ++i) {
                 for (; j <= count_columns() && !func::equality(isv_matrix[i][j], VT(1.0)); ++j) {}
 
@@ -906,8 +907,8 @@ namespace alg::geom {
             return result;
         }
 
-        static Matrix zip_map(const Matrix& matrix1, const Matrix& matrix2, std::function<VT(VT, VT)> zip_func) {
-            Matrix result(std::min(matrix1.count_strings(), matrix2.count_strings()), std::min(matrix1.count_columns(), matrix2.count_columns()));
+        static Matrix<VT> zip_map(const Matrix<VT>& matrix1, const Matrix<VT>& matrix2, std::function<VT(VT, VT)> zip_func) {
+            Matrix<VT> result(std::min(matrix1.count_strings(), matrix2.count_strings()), std::min(matrix1.count_columns(), matrix2.count_columns()));
             for (size_t i = 0; i < result.count_strings(); ++i) {
                 for (size_t j = 0; j < result.count_columns(); ++j) {
                     result[i][j] = zip_func(matrix1[i][j], matrix2[i][j]);
@@ -916,62 +917,80 @@ namespace alg::geom {
             return result;
         }
 
-        static Matrix one_matrix(size_t size) noexcept {
-            Matrix result(size, size, 0);
+        static Matrix<VT> one_matrix(size_t size) {
+            Matrix<VT> result(size, size, VT(0.0));
             for (size_t i = 0; i < size; ++i) {
                 result[i][i] = 1;
             }
             return result;
         }
 
-        static Matrix scale_matrix(const Vec3<VT>& scale) noexcept {
-            return Matrix({
+        static Matrix<VT> scale_matrix(VT scale_x, VT scale_y, VT scale_z) {
+            return Matrix<VT>({
+                { scale_x, VT(0.0), VT(0.0), VT(0.0) },
+                { VT(0.0), scale_y, VT(0.0), VT(0.0) },
+                { VT(0.0), VT(0.0), scale_z, VT(0.0) },
+                { VT(0.0), VT(0.0), VT(0.0), VT(1.0) },
+            });
+        }
+
+        static Matrix<VT> scale_matrix(const Vec3<VT>& scale) {
+            return Matrix<VT>({
                 { scale.x, VT(0.0), VT(0.0), VT(0.0) },
                 { VT(0.0), scale.y, VT(0.0), VT(0.0) },
                 { VT(0.0), VT(0.0), scale.z, VT(0.0) },
                 { VT(0.0), VT(0.0), VT(0.0), VT(1.0) },
-                });
+            });
         }
 
-        static Matrix scale_matrix(VT scale) noexcept {
-            return Matrix({
+        static Matrix<VT> scale_matrix(VT scale) {
+            return Matrix<VT>({
                 {   scale, VT(0.0), VT(0.0), VT(0.0) },
                 { VT(0.0),   scale, VT(0.0), VT(0.0) },
                 { VT(0.0), VT(0.0),   scale, VT(0.0) },
                 { VT(0.0), VT(0.0), VT(0.0), VT(1.0) },
-                });
+            });
         }
 
-        static Matrix translation_matrix(const Vec3<VT>& translation) noexcept {
-            return Matrix({
+        static Matrix<VT> translation_matrix(VT translation_x, VT translation_y, VT translation_z) {
+            return Matrix<VT>({
+                { VT(1.0), VT(0.0), VT(0.0), translation_x },
+                { VT(0.0), VT(1.0), VT(0.0), translation_y },
+                { VT(0.0), VT(0.0), VT(1.0), translation_z },
+                { VT(0.0), VT(0.0), VT(0.0),       VT(1.0) },
+            });
+        }
+
+        static Matrix<VT> translation_matrix(const Vec3<VT>& translation) {
+            return Matrix<VT>({
                 { VT(1.0), VT(0.0), VT(0.0), translation.x },
                 { VT(0.0), VT(1.0), VT(0.0), translation.y },
                 { VT(0.0), VT(0.0), VT(1.0), translation.z },
                 { VT(0.0), VT(0.0), VT(0.0),       VT(1.0) },
-                });
+            });
         }
 
-        static Matrix<long double> rotation_matrix(const Vec3<VT>& axis, VT angle) {
-            if (func::equality(axis.length(), static_cast<long double>(0.0))) {
+        static Matrix<VT> rotation_matrix(const Vec3<VT>& axis, VT angle) {
+            if (func::equality(axis.length(), VT(0.0))) {
                 throw func::AlgInvalidArgument(__FILE__, __LINE__, "rotation_matrix, the axis vector has zero length.\n\n");
             }
 
-            Vec3<VT> norm_axis = axis.normalize();
-            long double x = norm_axis.x;
-            long double y = norm_axis.y;
-            long double z = norm_axis.z;
-            long double c = cosl(angle);
-            long double s = sinl(angle);
+            const Vec3<VT>& norm_axis = axis.normalize();
+            VT x = norm_axis.x;
+            VT y = norm_axis.y;
+            VT z = norm_axis.z;
+            VT c = cosl(angle);
+            VT s = sinl(angle);
 
-            return Matrix<long double>({
-                {           c + x * x * (1 - c),       x * y * (1 - c) - z * s,       x * z * (1 - c) + y * s, static_cast<long double>(0.0) },
-                {       y * x * (1 - c) + z * s,           c + y * y * (1 - c),       y * z * (1 - c) - x * s, static_cast<long double>(0.0) },
-                {       z * x * (1 - c) - y * s,       z * y * (1 - c) + x * s,           c + z * z * (1 - c), static_cast<long double>(0.0) },
-                { static_cast<long double>(0.0), static_cast<long double>(0.0), static_cast<long double>(0.0), static_cast<long double>(1.0) },
-                });
+            return Matrix<VT>({
+                {     c + x * x * (1 - c), x * y * (1 - c) - z * s, x * z * (1 - c) + y * s, VT(0.0) },
+                { y * x * (1 - c) + z * s,     c + y * y * (1 - c), y * z * (1 - c) - x * s, VT(0.0) },
+                { z * x * (1 - c) - y * s, z * y * (1 - c) + x * s,     c + z * z * (1 - c), VT(0.0) },
+                {                 VT(0.0),                 VT(0.0),                 VT(0.0), VT(1.0) },
+            });
         }
 
-        static Matrix normal_transform(const Matrix& transform) {
+        static Matrix<VT> normal_transform(const Matrix<VT>& transform) {
             if (transform.count_strings() != 4 || transform.count_columns() != 4) {
                 throw func::AlgInvalidArgument(__FILE__, __LINE__, "normal_transform, invalid matrix size.\n\n");
             }
@@ -996,7 +1015,7 @@ namespace alg::geom {
     }
 
     template <typename T>
-    std::ostream& operator<<(std::ostream& fout, const Matrix<T>& matrix) noexcept {
+    std::ostream& operator<<(std::ostream& fout, const Matrix<T>& matrix) {
         std::vector<std::vector<std::string>> description(matrix.count_strings(), std::vector<std::string>(matrix.count_columns()));
         for (size_t i = 0; i < matrix.count_strings(); ++i) {
             for (size_t j = 0; j < matrix.count_columns(); ++j) {
@@ -1008,14 +1027,14 @@ namespace alg::geom {
         return fout;
     }
 
-    template <typename T1, typename T2>
-    Matrix<T1> operator*(T2 value, const Matrix<T1>& matrix) noexcept {
+    template <typename T>
+    Matrix<T> operator*(T value, const Matrix<T>& matrix) {
         return matrix * value;
     }
 
 
     // ^^^ -----------Matrix---------- ^^^
     // -----------------------------------
-}   // MatrixLine, Matrix
+}   // MatrixLine, Matrix | Version: 1.0
 
 using namespace alg::geom;
