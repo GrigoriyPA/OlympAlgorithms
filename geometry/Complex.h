@@ -9,11 +9,11 @@ namespace alg {
             long double angle = 0.0;
         };
 
-        template <typename VT = long double>  // VT - numeric type
+        template <typename VT = long double>  // VT - standard numeric type
         class Complex {
         public:
-            VT re = 0.0;
-            VT im = 0.0;
+            VT re = VT(0.0);
+            VT im = VT(0.0);
 
             Complex() noexcept {
             }
@@ -23,13 +23,13 @@ namespace alg {
             }
 
             // Casts required: VT(long double)
-            Complex(const AngleRepresentation& complex) noexcept {
-                re = VT(complex.length * cosl(complex.angle));
-                im = VT(complex.length * sinl(complex.angle));
+            Complex(const AngleRepresentation& complex) {
+                re = VT(complex.length * std::cosl(complex.angle));
+                im = VT(complex.length * std::sinl(complex.angle));
             }
 
             template <typename T>  // Casts required: VT(T)
-            explicit Complex(const Vec2<T>& vect) noexcept {
+            explicit Complex(const Vec2<T>& vect) {
                 re = VT(vect.x);
                 im = VT(vect.y);
             }
@@ -77,8 +77,8 @@ namespace alg {
                 return { T(re), T(im) };
             }
 
-            explicit operator std::string() const noexcept {
-                return func::to_string(re) + " " + func::to_string(im);
+            explicit operator std::string() const {
+                return func::to_string(*this);
             }
 
             VT& operator[](size_t index) {
@@ -101,48 +101,48 @@ namespace alg {
                 throw func::AlgOutOfRange(__FILE__, __LINE__, "operator[], invalid index.\n\n");
             }
 
-            bool operator==(const Complex& other) const noexcept {
+            bool operator==(const Complex<VT>& other) const noexcept {
                 return func::equality(re, other.re) && func::equality(im, other.im);
             }
 
-            bool operator!=(const Complex& other) const noexcept {
-                return !(*this == other);
+            bool operator!=(const Complex<VT>& other) const noexcept {
+                return !func::equality(re, other.re) || !func::equality(im, other.im);
             }
 
-            Complex& operator+=(const Complex& other)& noexcept {
+            Complex<VT>& operator+=(const Complex<VT>& other)& noexcept {
                 re += other.re;
                 im += other.im;
                 return *this;
             }
 
-            Complex& operator+=(const VT& other)& noexcept {
+            Complex<VT>& operator+=(const VT& other)& noexcept {
                 re += other;
                 return *this;
             }
 
-            Complex& operator-=(const Complex& other)& noexcept {
+            Complex<VT>& operator-=(const Complex<VT>& other)& noexcept {
                 re -= other.re;
                 im -= other.im;
                 return *this;
             }
 
-            Complex& operator-=(const VT& other)& noexcept {
+            Complex<VT>& operator-=(const VT& other)& noexcept {
                 re -= other;
                 return *this;
             }
 
-            Complex& operator*=(const Complex& other)& noexcept {
+            Complex<VT>& operator*=(const Complex<VT>& other)& noexcept {
                 *this = *this * other;
                 return *this;
             }
 
-            Complex& operator*=(const VT& other)& noexcept {
+            Complex<VT>& operator*=(const VT& other)& noexcept {
                 re *= other;
                 im *= other;
                 return *this;
             }
 
-            Complex& operator/=(const Complex& other)& {
+            Complex<VT>& operator/=(const Complex<VT>& other)& {
                 VT divisor = other.module_sqr();
                 if (func::equality(divisor, VT(0.0))) {
                     throw func::AlgDomainError(__FILE__, __LINE__, "operator/=, division by zero.\n\n");
@@ -152,7 +152,7 @@ namespace alg {
                 return *this;
             }
 
-            Complex& operator/=(const VT& other)& {
+            Complex<VT>& operator/=(const VT& other)& {
                 if (func::equality(other, VT(0.0))) {
                     throw func::AlgDomainError(__FILE__, __LINE__, "operator/=, division by zero.\n\n");
                 }
@@ -162,48 +162,49 @@ namespace alg {
                 return *this;
             }
 
-            Complex& operator^=(int32_t other)& noexcept {
+            Complex<VT>& operator^=(int32_t other)& noexcept {
                 if (other < 0) {
-                    *this = VT(1) / func::binary_exponentiation(*this, abs(other));
-                } else {
-                    *this = func::binary_exponentiation(*this, abs(other));
+                    *this = VT(1.0) / func::binary_exponentiation(*this, static_cast<uint32_t>(std::abs(other)));
+                }
+                else {
+                    *this = func::binary_exponentiation(*this, static_cast<uint32_t>(other));
                 }
                 return *this;
             }
 
-            Complex operator-() const noexcept {
-                return Complex(-re, -im);
+            Complex<VT> operator-() const noexcept {
+                return Complex<VT>(-re, -im);
             }
 
-            Complex operator~() const noexcept {
-                return Complex(re, -im);
+            Complex<VT> operator~() const noexcept {
+                return Complex<VT>(re, -im);
             }
 
-            Complex operator+(const Complex& other) const noexcept {
-                return Complex(re + other.re, im + other.im);
+            Complex<VT> operator+(const Complex<VT>& other) const noexcept {
+                return Complex<VT>(re + other.re, im + other.im);
             }
 
-            Complex operator+(const VT& other) const noexcept {
-                return Complex(re + other, im);
+            Complex<VT> operator+(const VT& other) const noexcept {
+                return Complex<VT>(re + other, im);
             }
 
-            Complex operator-(const Complex& other) const noexcept {
-                return Complex(re - other.re, im - other.im);
+            Complex<VT> operator-(const Complex<VT>& other) const noexcept {
+                return Complex<VT>(re - other.re, im - other.im);
             }
 
-            Complex operator-(const VT& other) const noexcept {
-                return Complex(re - other, im);
+            Complex<VT> operator-(const VT& other) const noexcept {
+                return Complex<VT>(re - other, im);
             }
 
-            Complex operator*(const Complex& other) const noexcept {
-                return Complex(re * other.re - im * other.im, im * other.re + re * other.im);
+            Complex<VT> operator*(const Complex<VT>& other) const noexcept {
+                return Complex<VT>(re * other.re - im * other.im, im * other.re + re * other.im);
             }
 
-            Complex operator*(const VT& other) const noexcept {
-                return Complex(re * other, im * other);
+            Complex<VT> operator*(const VT& other) const noexcept {
+                return Complex<VT>(re * other, im * other);
             }
 
-            Complex operator/(const Complex& other) const {
+            Complex<VT> operator/(const Complex<VT>& other) const {
                 VT divisor = other.module_sqr();
                 if (func::equality(divisor, VT(0.0))) {
                     throw func::AlgDomainError(__FILE__, __LINE__, "operator/, division by zero.\n\n");
@@ -212,41 +213,48 @@ namespace alg {
                 return *this * (~other) / divisor;
             }
 
-            Complex operator/(const VT& other) const {
+            Complex<VT> operator/(const VT& other) const {
                 if (func::equality(other, VT(0.0))) {
                     throw func::AlgDomainError(__FILE__, __LINE__, "operator/, division by zero.\n\n");
                 }
 
-                return Complex(re / other, im / other);
+                return Complex<VT>(re / other, im / other);
             }
 
-            Complex operator^(int32_t other) const noexcept {
+            Complex<VT> operator^(int32_t other) const noexcept {
                 if (other < 0) {
-                    return VT(1) / func::binary_exponentiation(*this, abs(other));
+                    return VT(1.0) / func::binary_exponentiation(*this, static_cast<uint32_t>(std::abs(other)));
                 }
-                return func::binary_exponentiation(*this, abs(other));
+                return func::binary_exponentiation(*this, static_cast<uint32_t>(other));
             }
 
-            Complex swap() const noexcept {
+            Complex<VT> swap() const noexcept {
                 return Complex(im, re);
             }
 
-            Complex exponentiation(int32_t degree) const noexcept {
+            Complex<VT> exponentiation(int32_t degree) const {
                 try {
                     auto complex = AngleRepresentation(*this);
-                    complex.length = func::binary_exponentiation(complex.length, degree);
+                    
+                    if (degree < 0) {
+                        complex.length = VT(1.0) / func::binary_exponentiation(complex.length, static_cast<uint32_t>(std::abs(degree)));
+                    }
+                    else {
+                        complex.length = func::binary_exponentiation(complex.length, static_cast<uint32_t>(degree));
+                    }
+
                     complex.angle *= degree;
-                    return Complex(complex);
+                    return Complex<VT>(complex);
                 }
                 catch (func::AlgDomainError) {
-                    return Complex(0.0, 0.0);
+                    return Complex<VT>(0.0, 0.0);
                 }
             }
 
-            std::vector<Complex<VT>> root(uint32_t degree) const noexcept {
+            std::vector<Complex<VT>> root(uint32_t degree) const {
                 try {
                     auto complex = AngleRepresentation(*this);
-                    complex.length = pow(complex.length, 1.0 / static_cast<long double>(degree));
+                    complex.length = std::powl(complex.length, static_cast<long double>(1.0) / static_cast<long double>(degree));
                     complex.angle /= degree;
 
                     std::vector<Complex<VT>> result;
@@ -265,12 +273,12 @@ namespace alg {
                 return re * re + im * im;
             }
 
-            long double module() const noexcept {
-                return sqrtl(re * re + im * im);
+            long double module() const {
+                return std::sqrtl(re * re + im * im);
             }
 
-            static Complex zip_map(const Complex& v1, const Complex& v2, std::function<VT(VT, VT)> zip_func) {
-                return Complex(zip_func(v1.re, v2.re), zip_func(v1.im, v2.im));
+            static Complex<VT> zip_map(const Complex<VT>& v1, const Complex<VT>& v2, std::function<VT(VT, VT)> zip_func) {
+                return Complex<VT>(zip_func(v1.re, v2.re), zip_func(v1.im, v2.im));
             }
         };
 
@@ -300,17 +308,22 @@ namespace alg {
             if (!func::equality(abs(complex.im), T(1.0))) {
                 if (func::equality(complex.re, T(0.0))) {
                     fout << complex.im << "i";
-                } else if (less_equality(complex.im, T(0.0))) {
+                }
+                else if (less_equality(complex.im, T(0.0))) {
                     fout << complex.re << " - " << abs(complex.im) << "i";
-                } else {
+                }
+                else {
                     fout << complex.re << " + " << complex.im << "i";
                 }
-            } else {
+            }
+            else {
                 if (func::equality(complex.re, T(0.0))) {
                     fout << "i";
-                } else if (less_equality(complex.im, T(0.0))) {
+                }
+                else if (less_equality(complex.im, T(0.0))) {
                     fout << complex.re << " - i";
-                } else {
+                }
+                else {
                     fout << complex.re << " + i";
                 }
             }
@@ -322,25 +335,25 @@ namespace alg {
             return fout;
         }
 
-        template <typename T1, typename T2>
-        Complex<T2> operator+(T1 value, const Complex<T2>& complex) noexcept {
-            return Complex(complex.re + value, complex.im);
+        template <typename T>
+        Complex<T> operator+(T value, const Complex<T>& complex) noexcept {
+            return Complex<T>(complex.re + value, complex.im);
         }
 
-        template <typename T1, typename T2>
-        Complex<T2> operator-(T1 value, const Complex<T2>& complex) noexcept {
-            return Complex(-complex.re + value, -complex.im);
+        template <typename T>
+        Complex<T> operator-(T value, const Complex<T>& complex) noexcept {
+            return Complex<T>(-complex.re + value, -complex.im);
         }
 
-        template <typename T1, typename T2>
-        Complex<T2> operator*(T1 value, const Complex<T2>& complex) noexcept {
-            return Complex(complex.re * value, complex.im * value);
+        template <typename T>
+        Complex<T> operator*(T value, const Complex<T>& complex) noexcept {
+            return Complex<T>(complex.re * value, complex.im * value);
         }
 
-        template <typename T1, typename T2>
-        Complex<T2> operator/(T1 value, const Complex<T2>& complex) {
-            T2 divisor = complex.module_sqr();
-            if (func::equality(divisor, T2(0.0))) {
+        template <typename T>
+        Complex<T> operator/(T value, const Complex<T>& complex) {
+            T divisor = complex.module_sqr();
+            if (func::equality(divisor, T(0.0))) {
                 throw func::AlgDomainError(__FILE__, __LINE__, "operator/, division by zero.\n\n");
             }
 
@@ -349,15 +362,15 @@ namespace alg {
     }
 
     namespace func {
-        template <typename T>
-        bool equality(const Complex<T>& left, const Complex<T>& right, const T& eps = T(EPS)) {
-            return std::abs(left.re - right.re) <= eps && std::abs(left.im - right.im) <= eps;
+        template <typename T1, typename T2>  // T1, T2 - standard numeric types
+        bool equality(const Complex<T1>& left, const Complex<T2>& right, long double eps = func::EPS) noexcept {
+            return func::equality(left.re, right.re, eps) && func::equality(left.im, right.im, eps);
         }
     }
 
 
     // ^^^ ----------Complex---------- ^^^
     // -----------------------------------
-}   // Complex
+}   // Complex | Version: 1.0
 
 using namespace alg::geom;

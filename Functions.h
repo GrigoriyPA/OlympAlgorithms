@@ -140,6 +140,15 @@ namespace alg::func {
         return make_table(description_strings);
     }
 
+    template <typename T>  // Operators required: <<(std::stringstream, T)
+    std::string make_table(const std::vector<T>& description, std::streamsize precision = 6) {
+        std::vector<std::vector<std::string>> description_strings(1, std::vector<std::string>(description.size()));
+        for (size_t i = 0; i < description.size(); ++i) {
+            description_strings[0][i] = to_string(description[i], precision);
+        }
+        return make_table(description_strings);
+    }
+
     template <typename It>  // Operators required: !=(It, It), ++(It), *(It)
     std::string make_string(It container_begin, It container_end, std::streamsize precision = 6) {
         std::vector<std::vector<std::string>> table_description(1);
@@ -341,6 +350,15 @@ namespace alg::func {
             for (size_t j = 0; j < description[i].size(); ++j) {
                 description_strings[i][j] = to_string(description[i][j], precision);
             }
+        }
+        return make_table_decorated(description_strings, named_columns, vertical_sep, horizontal_sep, vertical_border, up_border, down_border);
+    }
+
+    template <typename T>  // Operators required: <<(std::stringstream, T); Up and down string format: "lmr" (l - left symbol, m - middle symbols, r - right symbol)
+    std::string make_table_decorated(const std::vector<T>& description, std::streamsize precision = 6, bool named_columns = false, const std::string& vertical_sep = std::string(1, char(179)), const std::string& horizontal_sep = std::string(1, char(196)), char vertical_border = char(179), const std::string& up_border = std::string(1, char(218)) + std::string(1, char(196)) + std::string(1, char(191)), const std::string& down_border = std::string(1, char(192)) + std::string(1, char(196)) + std::string(1, char(217))) {
+        std::vector<std::vector<std::string>> description_strings(1, std::vector<std::string>(description.size()));
+        for (size_t i = 0; i < description.size(); ++i) {
+            description_strings[0][i] = to_string(description[i], precision);
         }
         return make_table_decorated(description_strings, named_columns, vertical_sep, horizontal_sep, vertical_border, up_border, down_border);
     }
