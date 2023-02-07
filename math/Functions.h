@@ -16,14 +16,14 @@ namespace alg::math {
         return result;
     }
 
-    template <typename T>  // Constructors required: T(T); Operators required: -(T, int), *(T, T), =(T, T), %(T, T)
+    template <typename T>  // Constructors required: T(T); Casts required: uint32_t(T); Operators required: -(T, int), *(T, T), =(T, T), %(T, T)
     T inverse(const T& value, const T& modul, const T& one = T(1)) {
-        return binary_exponentiation_modul(value, modul - 2, modul, one);
+        return binary_exponentiation_modul(value, uint32_t(modul - 2), modul, one);
     }
 
 
     // ^^^ ---------Functions--------- ^^^
     // -----------------------------------
-}   // Functions
+}   // Functions | Version: 1.0
 
 using namespace alg::math;
