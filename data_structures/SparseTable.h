@@ -10,7 +10,7 @@ namespace alg::data_struct {
         inline static std::vector<uint32_t> log2_ = { 0 };
 
         const PR& predicate_;
-        std::vector<vector<VT>> table_;
+        std::vector<std::vector<VT>> table_;
 
         void build(const std::vector<VT>& init) {
             if (init.empty()) {
@@ -74,11 +74,11 @@ namespace alg::data_struct {
             return *this;
         }
 
-        bool operator==(const SparseTable<VT, PR>& other) const noexcept {
+        bool operator==(const SparseTable<VT, PR>& other) const {
             return table_[0] == other.table_[0];
         }
 
-        bool operator!=(const SparseTable<VT, PR>& other) const noexcept {
+        bool operator!=(const SparseTable<VT, PR>& other) const {
             return table_[0] != other.table_[0];
         }
 
