@@ -4,8 +4,8 @@ namespace alg::func {
 
 
     const long double EPS = 1e-7;
-    const long double FI = (std::sqrtl(5.0) - 1.0) / 2.0;
-    const long double PI = std::acosl(-1.0);
+    const long double FI = (sqrtl(5.0) - 1.0) / 2.0;
+    const long double PI = acosl(-1.0);
 
 
     class AlgDomainError : public std::domain_error {

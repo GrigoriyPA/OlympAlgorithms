@@ -3,18 +3,18 @@ namespace alg::str {
     // vvv ---------SubString--------- vvv
 
 
-    template <uint64_t BASE, uint64_t MODUL, uint8_t MINIMAL_SYMBOL>
+    template <uint64_t BASE, uint64_t MODUL>
     class HashString;
 
-    template <uint64_t BASE, uint64_t MODUL, uint8_t MINIMAL_SYMBOL>
+    template <uint64_t BASE, uint64_t MODUL>
     class SubString {
-        friend class HashString<BASE, MODUL, MINIMAL_SYMBOL>;
+        friend class HashString<BASE, MODUL>;
 
         size_t left_id_;
         size_t right_id_;
-        const HashString<BASE, MODUL, MINIMAL_SYMBOL>* str_;
+        const HashString<BASE, MODUL>* str_;
 
-        SubString(size_t left_id, size_t right_id, const HashString<BASE, MODUL, MINIMAL_SYMBOL>* str) {
+        SubString(size_t left_id, size_t right_id, const HashString<BASE, MODUL>* str) {
             if (left_id > right_id) {
                 throw func::AlgInvalidArgument(__FILE__, __LINE__, "SubString, invalid range.\n\n");
             }
@@ -37,15 +37,15 @@ namespace alg::str {
             return (*str_)[left_id_ + index];
         }
 
-        bool operator==(const SubString& other) const noexcept {
+        bool operator==(const SubString<BASE, MODUL>& other) const noexcept {
             return get_hash() == other.get_hash();
         }
 
-        bool operator!=(const SubString& other) const noexcept {
+        bool operator!=(const SubString<BASE, MODUL>& other) const noexcept {
             return get_hash() != other.get_hash();
         }
 
-        std::strong_ordering operator<=>(const SubString& other) const noexcept {
+        std::strong_ordering operator<=>(const SubString<BASE, MODUL>& other) const noexcept {
             if (*this == other) {
                 return std::strong_ordering::equal;
             }
@@ -54,11 +54,11 @@ namespace alg::str {
             if (equal_prefix_size == std::min(size(), other.size())) {
                 return size() <=> other.size();
             }
-            return (*this)[equal_prefix_size] <=> other[equal_prefix_size];
+            return (*str_)[left_id_ + equal_prefix_size] <=> (*other.str_)[other.left_id_ + equal_prefix_size];
         }
 
-        size_t operator&(const SubString& other) const noexcept {
-            if ((*this)[0] != other[0]) {
+        size_t operator&(const SubString<BASE, MODUL>& other) const noexcept {
+            if ((*str_)[left_id_] != (*other.str_)[other.left_id_]) {
                 return 0;
             }
 
@@ -67,7 +67,7 @@ namespace alg::str {
             while (right - left > 1) {
                 size_t middle = (left + right) / 2;
 
-                if (get_hash(0, middle) == other.get_hash(0, middle)) {
+                if (str_->get_hash(left_id_, left_id_ + middle) == other.str_->get_hash(other.left_id_, other.left_id_ + middle)) {
                     left = middle;
                 }
                 else {
@@ -93,10 +93,11 @@ namespace alg::str {
             return str_->get_hash(left_id_, right_id_);
         }
 
-        std::string get_string() const noexcept {
+        std::string get_string() const {
             std::string str;
+            str.reserve(size());
             for (size_t i = 0; i < size(); ++i) {
-                str.push_back((*this)[i]);
+                str.push_back((*str_)[left_id_ + i]);
             }
             return str;
         }
@@ -106,8 +107,8 @@ namespace alg::str {
         }
     };
 
-    template <uint64_t BASE, uint64_t MODUL, uint8_t MINIMAL_SYMBOL>
-    std::ostream& operator<<(std::ostream& fout, const SubString<BASE, MODUL, MINIMAL_SYMBOL>& sub_str) noexcept {
+    template <uint64_t BASE, uint64_t MODUL>
+    std::ostream& operator<<(std::ostream& fout, const SubString<BASE, MODUL>& sub_str) {
         fout << sub_str.get_string();
         return fout;
     }
@@ -118,8 +119,11 @@ namespace alg::str {
     // vvv ---------HashString-------- vvv
 
 
-    // Default values for strings of English characters
-    template <uint64_t BASE = 31, uint64_t MODUL = 1000000007, uint8_t MINIMAL_SYMBOL = 'a'>
+    // Polynomial hashing by base BASE with modul MODUL
+    // Expected BASE and MODUL:
+    // -- BASE, MODUL - prime values
+    // -- 256 < BASE < MODUL < 2^32
+    template <uint64_t BASE = 263, uint64_t MODUL = 1000000007>
     class HashString {
         inline static std::vector<uint64_t> power_ = std::vector<uint64_t>(1, 1);
 
@@ -129,17 +133,13 @@ namespace alg::str {
             hash_.clear();
             hash_.resize(str.size() + 1, 0);
             for (size_t i = 1; i <= str.size(); ++i) {
-                if (str[i - 1] < MINIMAL_SYMBOL) {
-                    throw func::AlgInvalidArgument(__FILE__, __LINE__, "update_hash, invalid minimal symbol value.\n\n");
-                }
-
-                hash_[i] = (hash_[i - 1] * BASE + static_cast<uint64_t>(str[i - 1] - MINIMAL_SYMBOL) + 1) % MODUL;
+                hash_[i] = (hash_[i - 1] * BASE + static_cast<uint64_t>(str[i - 1]) + 1) % MODUL;
             }
 
             update_power(str.size() + 1);
         }
 
-        static void update_power(size_t new_size) noexcept {
+        static void update_power(size_t new_size) {
             power_.reserve(new_size);
             while (power_.size() < new_size) {
                 power_.push_back((power_.back() * BASE) % MODUL);
@@ -148,26 +148,26 @@ namespace alg::str {
 
     public:
         class ConstIterator {
-            friend class HashString<BASE, MODUL, MINIMAL_SYMBOL>;
+            friend class HashString<BASE, MODUL>;
 
             int64_t id_;
-            const HashString* str_;
+            const HashString<BASE, MODUL>* str_;
 
-            ConstIterator(int64_t id, const HashString* str) noexcept {
+            ConstIterator(int64_t id, const HashString<BASE, MODUL>* str) noexcept {
                 id_ = id;
                 str_ = str;
             }
 
         public:
-            bool operator==(const ConstIterator& other) const {
+            bool operator==(const ConstIterator& other) const noexcept {
                 return id_ == other.id_ && str_ == other.str_;
             }
 
-            bool operator!=(const ConstIterator& other) const {
-                return !(*this == other);
+            bool operator!=(const ConstIterator& other) const noexcept {
+                return id_ != other.id_ || str_ != other.str_;
             }
 
-            std::strong_ordering operator<=>(const ConstIterator& other) const {
+            std::strong_ordering operator<=>(const ConstIterator& other) const noexcept {
                 return id_ <=> other.id_;
             }
 
@@ -181,7 +181,7 @@ namespace alg::str {
                 return *this;
             }
 
-            char operator*() const {
+            const char& operator*() const {
                 return (*str_)[id_];
             }
 
@@ -220,15 +220,11 @@ namespace alg::str {
             }
         };
 
-        HashString() noexcept {
+        HashString() {
             hash_.push_back(0);
         }
 
-        explicit HashString(size_t size, char symbol = MINIMAL_SYMBOL) noexcept {
-            if (symbol < MINIMAL_SYMBOL) {
-                throw func::AlgInvalidArgument(__FILE__, __LINE__, "HashString, invalid minimal symbol value.\n\n");
-            }
-
+        explicit HashString(size_t size, char symbol = '\0') {
             update_hash(std::string(size, symbol));
         }
 
@@ -236,7 +232,7 @@ namespace alg::str {
             update_hash(str);
         }
 
-        HashString& operator=(const std::string& other)& {
+        HashString<BASE, MODUL>& operator=(const std::string& other)& {
             update_hash(other);
             return *this;
         }
@@ -246,11 +242,11 @@ namespace alg::str {
                 throw func::AlgOutOfRange(__FILE__, __LINE__, "operator[], invalid index.\n\n");
             }
 
-            uint64_t hash = get_hash(index, index) + MODUL - 1;
-            return MINIMAL_SYMBOL + static_cast<char>(hash < MODUL ? hash : hash - MODUL);
+            uint64_t hash = hash_[index + 1] + (MODUL - (hash_[index] * BASE) % MODUL) - 1;
+            return static_cast<char>(hash < MODUL ? hash : hash - MODUL);
         }
 
-        SubString<BASE, MODUL, MINIMAL_SYMBOL> operator()(size_t left_id, size_t right_id) const {
+        SubString<BASE, MODUL> operator()(size_t left_id, size_t right_id) const {
             if (left_id > right_id) {
                 throw func::AlgInvalidArgument(__FILE__, __LINE__, "operator(), invalid range.\n\n");
             }
@@ -259,18 +255,18 @@ namespace alg::str {
                 throw func::AlgOutOfRange(__FILE__, __LINE__, "operator(), invalid range size.\n\n");
             }
 
-            return SubString<BASE, MODUL, MINIMAL_SYMBOL>(left_id, right_id, this);
+            return SubString<BASE, MODUL>(left_id, right_id, this);
         }
 
-        bool operator==(const HashString& other) const noexcept {
+        bool operator==(const HashString<BASE, MODUL>& other) const noexcept {
             return get_hash() == other.get_hash();
         }
 
-        bool operator!=(const HashString& other) const noexcept {
+        bool operator!=(const HashString<BASE, MODUL>& other) const noexcept {
             return get_hash() != other.get_hash();
         }
 
-        std::strong_ordering operator<=>(const HashString& other) const noexcept {
+        std::strong_ordering operator<=>(const HashString<BASE, MODUL>& other) const noexcept {
             if (empty() && other.empty()) {
                 return std::strong_ordering::equal;
             }
@@ -280,14 +276,14 @@ namespace alg::str {
             if (other.empty()) {
                 return std::strong_ordering::greater;
             }
-            return (*this)(0, size() - 1) <=> other(0, other.size() - 1);
+            return SubString<BASE, MODUL>(0, size() - 1, this) <=> SubString<BASE, MODUL>(0, other.size() - 1, &other);
         }
 
-        size_t operator&(const HashString& other) const noexcept {
+        size_t operator&(const HashString<BASE, MODUL>& other) const noexcept {
             if (empty() || other.empty()) {
                 return 0;
             }
-            return *this & other;
+            return SubString<BASE, MODUL>(0, size() - 1, this) & SubString<BASE, MODUL>(0, other.size() - 1, &other);
         }
 
         uint64_t get_hash(size_t left_id, size_t right_id) const {
@@ -307,8 +303,9 @@ namespace alg::str {
             return hash_.back() % MODUL;
         }
 
-        std::string get_string() const noexcept {
+        std::string get_string() const {
             std::string str;
+            str.reserve(size());
             for (size_t i = 0; i < size(); ++i) {
                 str.push_back((*this)[i]);
             }
@@ -320,7 +317,7 @@ namespace alg::str {
         }
 
         bool empty() const noexcept {
-            return hash_.size() > 1;
+            return hash_.size() == 1;
         }
 
         ConstIterator begin() const noexcept {
@@ -332,20 +329,16 @@ namespace alg::str {
         }
 
         void swap(HashString& other) noexcept {
-            std::swap(hash_, other.hash_);
+            hash_.swap(other.hash_);
         }
 
-        void reserve(size_t size) noexcept {
+        void reserve(size_t size) {
             hash_.reserve(size + 1);
             power_.reserve(size + 1);
         }
 
         void push_back(char symbol) {
-            if (symbol < MINIMAL_SYMBOL) {
-                throw func::AlgInvalidArgument(__FILE__, __LINE__, "push_back, invalid minimal symbol value.\n\n");
-            }
-
-            hash_.push_back((hash_.back() * BASE + static_cast<uint64_t>(symbol - MINIMAL_SYMBOL) + 1) % MODUL);
+            hash_.push_back((hash_.back() * BASE + static_cast<uint64_t>(symbol) + 1) % MODUL);
             update_power(hash_.size());
         }
 
@@ -357,22 +350,22 @@ namespace alg::str {
             hash_.pop_back();
         }
 
-        void clear() noexcept {
+        void clear() {
             hash_.clear();
             hash_.push_back(0);
         }
     };
 
-    template <uint64_t BASE, uint64_t MODUL, uint8_t MINIMAL_SYMBOL>
-    std::istream& operator>>(std::istream& fin, HashString<BASE, MODUL, MINIMAL_SYMBOL>& hash_str) noexcept {
+    template <uint64_t BASE, uint64_t MODUL>
+    std::istream& operator>>(std::istream& fin, HashString<BASE, MODUL>& hash_str) {
         std::string str;
         fin >> str;
         hash_str = str;
         return fin;
     }
 
-    template <uint64_t BASE, uint64_t MODUL, uint8_t MINIMAL_SYMBOL>
-    std::ostream& operator<<(std::ostream& fout, const HashString<BASE, MODUL, MINIMAL_SYMBOL>& hash_str) noexcept {
+    template <uint64_t BASE, uint64_t MODUL>
+    std::ostream& operator<<(std::ostream& fout, const HashString<BASE, MODUL>& hash_str) {
         fout << hash_str.get_string();
         return fout;
     }
@@ -380,6 +373,6 @@ namespace alg::str {
 
     // ^^^ ---------HashString-------- ^^^
     // -----------------------------------
-}   // HashString
+}   // HashString | Version: 1.0
 
 using namespace alg::str;

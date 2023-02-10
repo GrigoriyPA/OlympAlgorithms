@@ -2,6 +2,7 @@
 #include <bitset>
 #include <cassert>
 #include <chrono>
+#include <cmath>
 #include <ctime>
 #include <fstream>
 #include <functional>
