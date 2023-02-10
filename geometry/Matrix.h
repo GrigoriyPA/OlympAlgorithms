@@ -202,6 +202,14 @@ namespace alg::geom {
             return get_value([&](const VT& left, const VT& right) -> const VT& { return func(left, right); });
         }
 
+        VT& front() {
+            if (line_.empty()) {
+                throw func::AlgOutOfRange(__FILE__, __LINE__, "front, called from empty line.\n\n");
+            }
+
+            return line_.front();
+        }
+
         VT& back() {
             if (line_.empty()) {
                 throw func::AlgOutOfRange(__FILE__, __LINE__, "back, called from empty line.\n\n");

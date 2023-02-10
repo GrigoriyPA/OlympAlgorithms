@@ -326,6 +326,6 @@ namespace alg::data_struct {
 
     // ^^^ -------FenwickTree1D------- ^^^
     // -----------------------------------
-}   // FenwickTree1D
+}   // FenwickTree1D | Version: 0.0
 
 using namespace alg::data_struct;

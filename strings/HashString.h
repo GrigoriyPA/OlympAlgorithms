@@ -102,6 +102,14 @@ namespace alg::str {
             return str;
         }
 
+        char front() const noexcept {
+            return (*str_)[left_id_];
+        }
+
+        char back() const noexcept {
+            return (*str_)[right_id_];
+        }
+
         size_t size() const noexcept {
             return right_id_ - left_id_ + 1;
         }
@@ -320,6 +328,22 @@ namespace alg::str {
             return hash_.size() == 1;
         }
 
+        char front() const {
+            if (empty()) {
+                throw func::AlgRuntimeError(__FILE__, __LINE__, "front, called from empty string.\n\n");
+            }
+
+            return (*this)[0];
+        }
+
+        char back() const {
+            if (empty()) {
+                throw func::AlgRuntimeError(__FILE__, __LINE__, "back, called from empty string.\n\n");
+            }
+
+            return (*this)[size() - 1];
+        }
+
         ConstIterator begin() const noexcept {
             return ConstIterator(0, this);
         }
@@ -328,13 +352,13 @@ namespace alg::str {
             return ConstIterator(size(), this);
         }
 
-        void swap(HashString& other) noexcept {
+        void swap(HashString<BASE, MODUL>& other) noexcept {
             hash_.swap(other.hash_);
         }
 
         void reserve(size_t size) {
             hash_.reserve(size + 1);
-            power_.reserve(size + 1);
+            update_power(size + 1);
         }
 
         void push_back(char symbol) {

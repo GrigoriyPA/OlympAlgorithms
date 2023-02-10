@@ -155,6 +155,6 @@ namespace alg::data_struct {
 
     // ^^^ ----------MaxQueue--------- ^^^
     // -----------------------------------
-}   // MaxQueue
+}   // MaxQueue | Version: 0.0
 
 using namespace alg::data_struct;

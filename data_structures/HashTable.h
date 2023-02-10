@@ -6,7 +6,7 @@
 #include <vector>
 
 
-template <typename KeyType, typename ValueType, class Hash = std::hash<KeyType>>
+template <typename KeyType, typename ValueType, typename Hash = std::hash<KeyType>>
 class HashMap {
     using Accordance = std::pair<const KeyType, ValueType>;
 
@@ -229,3 +229,5 @@ public:
         }
     }
 };
+
+// | Version: ?
