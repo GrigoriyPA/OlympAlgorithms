@@ -3,7 +3,11 @@ namespace alg::data_struct {
     // vvv -------FenwickTree1D------- vvv
 
 
-    template <typename VT = int64_t>  // Constructors required: VT(0), VT(VT); Operators required: +(VT, VT), -(VT, VT)
+    // VT constructors required: VT(VT); Operators required: +(VT, VT), -(VT, VT)
+    // FO operators required: (VT, VT) -> VT
+    // RO operators required: (VT, VT) -> VT
+    // Expected: FO, PO -- associativity, commutativity operations; RO(FO(x, y), y) = x
+    template <typename VT = int64_t, typename FO = std::plus<VT>, typename RO = std::minus<VT>>
     class FenwickTree {
         class ProxyObject {
             size_t id_;
@@ -31,25 +35,20 @@ namespace alg::data_struct {
                 tree_->change(id_, other);
                 return *this;
             }
-
-            ProxyObject& operator-=(const VT& other) {
-                tree_->change(id_, tree_->zero_ - other);
-                return *this;
-            }
         };
 
         friend class ProxyObject;
 
-        VT zero_;
+        const FO& forward_operation_;
+        const RO& reverse_operation_;
         std::vector<VT> tree_;
         std::vector<VT> value_;
 
-        template <typename T>  // Casts required: VT(T)
-        void build_tree(const std::vector<T>& value) {
-            value_.resize(value.size(), zero_);
-            tree_.resize(value.size() + 1, zero_);
-            for (size_t i = 0; i < value.size(); ++i) {
-                change(i, value[i]);
+        void build_tree(const std::vector<VT>& value) {
+            value_.reserve(value.size());
+            tree_.reserve(value.size());
+            for (const VT& element : value) {
+                push_back(element);
             }
         }
 
@@ -66,15 +65,15 @@ namespace alg::data_struct {
             }
 
         public:
-            bool operator==(const Iterator& other) const {
+            bool operator==(const Iterator& other) const noexcept {
                 return id_ == other.id_ && tree_ == other.tree_;
             }
 
-            bool operator!=(const Iterator& other) const {
+            bool operator!=(const Iterator& other) const noexcept {
                 return !(*this == other);
             }
 
-            std::strong_ordering operator<=>(const Iterator& other) const {
+            std::strong_ordering operator<=>(const Iterator& other) const noexcept {
                 return id_ <=> other.id_;
             }
 
@@ -129,32 +128,46 @@ namespace alg::data_struct {
 
         using ConstIterator = std::vector<VT>::const_iterator;
 
-        FenwickTree(size_t size, const VT& init) noexcept : zero_(0) {
+        FenwickTree() : forward_operation_(FO()), reverse_operation_(RO()) {
+        }
+
+        explicit FenwickTree(const FO& forward_operation, const RO& reverse_operation = RO()) :
+            forward_operation_(forward_operation), reverse_operation_(reverse_operation) {
+        }
+
+        FenwickTree(size_t size, const VT& init, const FO& forward_operation = FO(), const RO& reverse_operation = RO()) :
+            forward_operation_(forward_operation), reverse_operation_(reverse_operation) {
             build_tree(std::vector<VT>(size, init));
         }
 
-        FenwickTree(size_t size, const VT& init, const VT& zero) noexcept : zero_(zero) {
-            build_tree(std::vector<VT>(size, init));
-        }
-
-        template <typename T>  // Casts required: VT(T)
-        FenwickTree(const std::vector<T>& init) noexcept : zero_(0) {
+        FenwickTree(const std::initializer_list<VT>& init, const FO& forward_operation = FO(), const RO& reverse_operation = RO()) :
+            forward_operation_(forward_operation), reverse_operation_(reverse_operation) {
             build_tree(init);
         }
 
-        template <typename T>  // Casts required: VT(T)
-        FenwickTree(const std::vector<T>& init, const VT& zero) noexcept : zero_(zero) {
+        explicit FenwickTree(const std::vector<VT>& init, const FO& forward_operation = FO(), const RO& reverse_operation = RO()) :
+            forward_operation_(forward_operation), reverse_operation_(reverse_operation) {
             build_tree(init);
         }
 
-        template <typename T>  // Casts required: VT(T)
-        FenwickTree(const std::initializer_list<T>& init) noexcept : zero_(0) {
-            build_tree(std::vector<T>(init));
+        FenwickTree<VT>& operator=(const FenwickTree<VT>& other)& {
+            tree_ = other.tree_;
+            value_ = other.value_;
+            return *this;
         }
 
-        template <typename T>  // Casts required: VT(T)
-        FenwickTree(const std::initializer_list<T>& init, const VT& zero) noexcept : zero_(zero) {
-            build_tree(std::vector<T>(init));
+        FenwickTree<VT>& operator=(const std::vector<VT>& other)& {
+            clear();
+            build_tree(other);
+            return *this;
+        }
+
+        bool operator==(const FenwickTree<VT>& other) const {
+            return value_ == other.value_;
+        }
+
+        bool operator!=(const FenwickTree<VT>& other) const {
+            return value_ != other.value_;
         }
 
         ProxyObject operator[](size_t id) {
@@ -173,17 +186,9 @@ namespace alg::data_struct {
             return value_[id];
         }
 
-        bool operator==(const FenwickTree& other) const noexcept {
-            return value_ == other.value_ && zero_ == other.zero_;
-        }
-
-        bool operator!=(const FenwickTree& other) const noexcept {
-            return !(*this == other);
-        }
-
         VT at(size_t id) const {
             if (id >= value_.size()) {
-                throw func::AlgOutOfRange(__FILE__, __LINE__, "get, invalid index.\n\n");
+                throw func::AlgOutOfRange(__FILE__, __LINE__, "at, invalid index.\n\n");
             }
 
             return value_[id];
@@ -195,6 +200,38 @@ namespace alg::data_struct {
 
         bool empty() const noexcept {
             return value_.empty();
+        }
+
+        ProxyObject front() {
+            if (empty()) {
+                throw func::AlgRuntimeError(__FILE__, __LINE__, "front, called from empty tree.\n\n");
+            }
+
+            return ProxyObject(0, this);
+        }
+
+        const VT& front() const {
+            if (empty()) {
+                throw func::AlgRuntimeError(__FILE__, __LINE__, "front, called from empty tree.\n\n");
+            }
+
+            return value_.front();
+        }
+
+        ProxyObject back() {
+            if (empty()) {
+                throw func::AlgRuntimeError(__FILE__, __LINE__, "back, called from empty tree.\n\n");
+            }
+
+            return ProxyObject(size() - 1, this);
+        }
+
+        const VT& back() const {
+            if (empty()) {
+                throw func::AlgRuntimeError(__FILE__, __LINE__, "back, called from empty tree.\n\n");
+            }
+
+            return value_.back();
         }
 
         Iterator begin() noexcept {
@@ -214,48 +251,50 @@ namespace alg::data_struct {
         }
 
         VT prefix_sum(size_t prfix_size) const {
-            if (prfix_size > value_.size()) {
+            if (prfix_size == 0 || prfix_size > value_.size()) {
                 throw func::AlgOutOfRange(__FILE__, __LINE__, "prefix_sum, invalid prfix size.\n\n");
             }
 
-            VT result = zero_;
-            for (int64_t i = prfix_size; i > 0; i -= i & -i) {
-                result = result + tree_[i];
+            VT result(tree_[prfix_size - 1]);
+            int64_t start = static_cast<int64_t>(prfix_size);
+            for (int64_t i = start - (start & -start); i > 0; i -= i & -i) {
+                result = forward_operation_(result, tree_[i - 1]);
             }
+
             return result;
         }
 
         VT sum(size_t left, size_t right) const {
-            if (left > right || right >= value_.size()) {
-                throw func::AlgOutOfRange(__FILE__, __LINE__, "sum, invalid range.\n\n");
+            if (left > right) {
+                throw func::AlgInvalidArgument(__FILE__, __LINE__, "sum, invalid range.\n\n");
             }
 
-            return prefix_sum(right + 1) - prefix_sum(left);
+            if (right >= value_.size()) {
+                throw func::AlgOutOfRange(__FILE__, __LINE__, "sum, invalid range size.\n\n");
+            }
+
+            if (left == 0) {
+                return prefix_sum(right + 1);
+            }
+            return reverse_operation_(prefix_sum(right + 1), prefix_sum(left));
         }
 
-        void swap(FenwickTree& other) noexcept {
-            std::swap(zero_, other.zero_);
-            std::swap(tree_, other.tree_);
-            std::swap(value_, other.value_);
+        void swap(FenwickTree<VT>& other) noexcept {
+            tree_.swap(other.tree_);
+            value_.swap(other.value_);
         }
 
         void reserve(size_t size) noexcept {
             value_.reserve(size);
-            tree_.reserve(size + 1);
+            tree_.reserve(size);
         }
 
         void push_back(const VT& value) noexcept {
-            value_.push_back(zero_);
+            value_.push_back(value);
 
             int64_t left = static_cast<int64_t>(value_.size()) - (static_cast<int64_t>(value_.size()) & -static_cast<int64_t>(value_.size()));
             int64_t right = static_cast<int64_t>(value_.size()) - 2;
-            if (left <= right) {
-                tree_.push_back(sum(left, right));
-            } else {
-                tree_.push_back(zero_);
-            }
-
-            update(value_.size() - 1, value);
+            tree_.push_back(left <= right ? forward_operation_(sum(left, right), value) : value);
         }
 
         void pop_back() {
@@ -270,8 +309,6 @@ namespace alg::data_struct {
         void clear() noexcept {
             tree_.clear();
             value_.clear();
-
-            tree_.resize(1, zero_);
         }
 
         void update(size_t id, const VT& value) {
@@ -279,7 +316,7 @@ namespace alg::data_struct {
                 throw func::AlgOutOfRange(__FILE__, __LINE__, "update, invalid index.\n\n");
             }
 
-            change(id, value - value_[id]);
+            change(id, reverse_operation_(value, value_[id]));
         }
 
         void change(size_t id, const VT& delta) {
@@ -287,45 +324,16 @@ namespace alg::data_struct {
                 throw func::AlgOutOfRange(__FILE__, __LINE__, "change, invalid index.\n\n");
             }
 
-            value_[id] = value_[id] + delta;
-            for (int64_t i = id + 1; i < static_cast<int64_t>(tree_.size()); i += i & -i) {
-                tree_[i] = tree_[i] + delta;
+            value_[id] = forward_operation_(value_[id], delta);
+            for (int64_t i = id + 1; i < static_cast<int64_t>(tree_.size() + 1); i += i & -i) {
+                tree_[i - 1] = forward_operation_(tree_[i - 1], delta);
             }
         }
-
-        template <typename T>
-        friend std::ostream& operator<<(std::ostream& fout, const FenwickTree<T>& vector) noexcept;
     };
-
-    template <typename T>
-    std::istream& operator>>(std::istream& fin, FenwickTree<T>& tree) noexcept {
-        for (size_t i = 0; i < tree.size(); ++i) {
-            T value;
-            fin >> value;
-
-            tree.update(i, value);
-        }
-        return fin;
-    }
-
-    template <typename T>
-    std::ostream& operator<<(std::ostream& fout, const FenwickTree<T>& tree) noexcept {
-        std::vector<std::vector<std::string>> description(tree.size() + 2);
-        description[0] = { "index", "value", "tree state" };
-        for (size_t i = 1; i < tree.size() + 2; ++i) {
-            description[i] = { func::to_string(i - 1), ".", func::to_string(tree.tree_[i - 1]) };
-            if (i > 1) {
-                description[i][1] = func::to_string(tree.value_[i - 2]);
-            }
-        }
-
-        fout << func::make_table_decorated(description);
-        return fout;
-    }
 
 
     // ^^^ -------FenwickTree1D------- ^^^
     // -----------------------------------
-}   // FenwickTree1D | Version: 0.0
+}   // FenwickTree1D | Version: 1.0
 
 using namespace alg::data_struct;
