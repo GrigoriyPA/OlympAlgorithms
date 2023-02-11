@@ -3,7 +3,7 @@ namespace alg::data_struct {
     // vvv -------FenwickTree1D------- vvv
 
 
-    // ValueType constructors required: ValueType(ValueType)
+    // ValueType constructors required: ValueType(ValueType); operators required: =(ValueType, ValueType)
     // ForwardOperation operators required: (ValueType, ValueType) -> ValueType
     // ReverseOperation operators required: (ValueType, ValueType) -> ValueType
     // Expected: ForwardOperation, PO -- associativity, commutativity operations; ReverseOperation(ForwardOperation(x, y), y) = x
