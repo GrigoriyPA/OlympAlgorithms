@@ -3,11 +3,11 @@ namespace alg::data_struct {
     // vvv -------FenwickTree1D------- vvv
 
 
-    // VT constructors required: VT(VT); Operators required: +(VT, VT), -(VT, VT)
-    // FO operators required: (VT, VT) -> VT
-    // RO operators required: (VT, VT) -> VT
-    // Expected: FO, PO -- associativity, commutativity operations; RO(FO(x, y), y) = x
-    template <typename VT = int64_t, typename FO = std::plus<VT>, typename RO = std::minus<VT>>
+    // ValueType constructors required: ValueType(ValueType)
+    // ForwardOperation operators required: (ValueType, ValueType) -> ValueType
+    // ReverseOperation operators required: (ValueType, ValueType) -> ValueType
+    // Expected: ForwardOperation, PO -- associativity, commutativity operations; ReverseOperation(ForwardOperation(x, y), y) = x
+    template <typename ValueType = int64_t, typename ForwardOperation = std::plus<ValueType>, typename ReverseOperation = std::minus<ValueType>>
     class FenwickTree {
         class ProxyObject {
             size_t id_;
@@ -23,15 +23,15 @@ namespace alg::data_struct {
                 tree_ = tree;
             }
 
-            ProxyObject& operator=(const VT& other) {
+            ProxyObject& operator=(const ValueType& other) {
                 tree_->update(id_, other);
             }
 
-            operator VT() const noexcept {
+            operator ValueType() const noexcept {
                 return tree_->at(id_);
             }
 
-            ProxyObject& operator+=(const VT& other) {
+            ProxyObject& operator+=(const ValueType& other) {
                 tree_->change(id_, other);
                 return *this;
             }
@@ -39,22 +39,22 @@ namespace alg::data_struct {
 
         friend class ProxyObject;
 
-        const FO& forward_operation_;
-        const RO& reverse_operation_;
-        std::vector<VT> tree_;
-        std::vector<VT> value_;
+        const ForwardOperation& forward_operation_;
+        const ReverseOperation& reverse_operation_;
+        std::vector<ValueType> tree_;
+        std::vector<ValueType> value_;
 
-        void build_tree(const std::vector<VT>& value) {
+        void build_tree(const std::vector<ValueType>& value) {
             value_.reserve(value.size());
             tree_.reserve(value.size());
-            for (const VT& element : value) {
+            for (const ValueType& element : value) {
                 push_back(element);
             }
         }
 
     public:
         class Iterator {
-            friend class FenwickTree<VT>;
+            friend class FenwickTree<ValueType>;
 
             int64_t id_;
             FenwickTree* tree_;
@@ -126,47 +126,47 @@ namespace alg::data_struct {
             }
         };
 
-        using ConstIterator = std::vector<VT>::const_iterator;
+        using ConstIterator = std::vector<ValueType>::const_iterator;
 
-        FenwickTree() : forward_operation_(FO()), reverse_operation_(RO()) {
+        FenwickTree() : forward_operation_(ForwardOperation()), reverse_operation_(ReverseOperation()) {
         }
 
-        explicit FenwickTree(const FO& forward_operation, const RO& reverse_operation = RO()) :
+        explicit FenwickTree(const ForwardOperation& forward_operation, const ReverseOperation& reverse_operation = ReverseOperation()) :
             forward_operation_(forward_operation), reverse_operation_(reverse_operation) {
         }
 
-        FenwickTree(size_t size, const VT& init, const FO& forward_operation = FO(), const RO& reverse_operation = RO()) :
+        FenwickTree(size_t size, const ValueType& init, const ForwardOperation& forward_operation = ForwardOperation(), const ReverseOperation& reverse_operation = ReverseOperation()) :
             forward_operation_(forward_operation), reverse_operation_(reverse_operation) {
-            build_tree(std::vector<VT>(size, init));
+            build_tree(std::vector<ValueType>(size, init));
         }
 
-        FenwickTree(const std::initializer_list<VT>& init, const FO& forward_operation = FO(), const RO& reverse_operation = RO()) :
-            forward_operation_(forward_operation), reverse_operation_(reverse_operation) {
-            build_tree(init);
-        }
-
-        explicit FenwickTree(const std::vector<VT>& init, const FO& forward_operation = FO(), const RO& reverse_operation = RO()) :
+        FenwickTree(const std::initializer_list<ValueType>& init, const ForwardOperation& forward_operation = ForwardOperation(), const ReverseOperation& reverse_operation = ReverseOperation()) :
             forward_operation_(forward_operation), reverse_operation_(reverse_operation) {
             build_tree(init);
         }
 
-        FenwickTree<VT>& operator=(const FenwickTree<VT>& other)& {
+        explicit FenwickTree(const std::vector<ValueType>& init, const ForwardOperation& forward_operation = ForwardOperation(), const ReverseOperation& reverse_operation = ReverseOperation()) :
+            forward_operation_(forward_operation), reverse_operation_(reverse_operation) {
+            build_tree(init);
+        }
+
+        FenwickTree<ValueType, ForwardOperation, ReverseOperation>& operator=(const FenwickTree<ValueType, ForwardOperation, ReverseOperation>& other)& {
             tree_ = other.tree_;
             value_ = other.value_;
             return *this;
         }
 
-        FenwickTree<VT>& operator=(const std::vector<VT>& other)& {
+        FenwickTree<ValueType, ForwardOperation, ReverseOperation>& operator=(const std::vector<ValueType>& other)& {
             clear();
             build_tree(other);
             return *this;
         }
 
-        bool operator==(const FenwickTree<VT>& other) const {
+        bool operator==(const FenwickTree<ValueType, ForwardOperation, ReverseOperation>& other) const {
             return value_ == other.value_;
         }
 
-        bool operator!=(const FenwickTree<VT>& other) const {
+        bool operator!=(const FenwickTree<ValueType, ForwardOperation, ReverseOperation>& other) const {
             return value_ != other.value_;
         }
 
@@ -178,7 +178,7 @@ namespace alg::data_struct {
             return ProxyObject(id, this);
         }
 
-        const VT& operator[](size_t id) const {
+        const ValueType& operator[](size_t id) const {
             if (id >= value_.size()) {
                 throw func::AlgOutOfRange(__FILE__, __LINE__, "operator[], invalid index.\n\n");
             }
@@ -186,7 +186,7 @@ namespace alg::data_struct {
             return value_[id];
         }
 
-        VT at(size_t id) const {
+        ValueType at(size_t id) const {
             if (id >= value_.size()) {
                 throw func::AlgOutOfRange(__FILE__, __LINE__, "at, invalid index.\n\n");
             }
@@ -210,7 +210,7 @@ namespace alg::data_struct {
             return ProxyObject(0, this);
         }
 
-        const VT& front() const {
+        const ValueType& front() const {
             if (empty()) {
                 throw func::AlgRuntimeError(__FILE__, __LINE__, "front, called from empty tree.\n\n");
             }
@@ -226,7 +226,7 @@ namespace alg::data_struct {
             return ProxyObject(size() - 1, this);
         }
 
-        const VT& back() const {
+        const ValueType& back() const {
             if (empty()) {
                 throw func::AlgRuntimeError(__FILE__, __LINE__, "back, called from empty tree.\n\n");
             }
@@ -250,12 +250,12 @@ namespace alg::data_struct {
             return value_.end();
         }
 
-        VT prefix_sum(size_t prfix_size) const {
+        ValueType prefix_sum(size_t prfix_size) const {
             if (prfix_size == 0 || prfix_size > value_.size()) {
                 throw func::AlgOutOfRange(__FILE__, __LINE__, "prefix_sum, invalid prfix size.\n\n");
             }
 
-            VT result(tree_[prfix_size - 1]);
+            ValueType result(tree_[prfix_size - 1]);
             int64_t start = static_cast<int64_t>(prfix_size);
             for (int64_t i = start - (start & -start); i > 0; i -= i & -i) {
                 result = forward_operation_(result, tree_[i - 1]);
@@ -264,7 +264,7 @@ namespace alg::data_struct {
             return result;
         }
 
-        VT sum(size_t left, size_t right) const {
+        ValueType sum(size_t left, size_t right) const {
             if (left > right) {
                 throw func::AlgInvalidArgument(__FILE__, __LINE__, "sum, invalid range.\n\n");
             }
@@ -279,7 +279,7 @@ namespace alg::data_struct {
             return reverse_operation_(prefix_sum(right + 1), prefix_sum(left));
         }
 
-        void swap(FenwickTree<VT>& other) noexcept {
+        void swap(FenwickTree<ValueType, ForwardOperation, ReverseOperation>& other) noexcept {
             tree_.swap(other.tree_);
             value_.swap(other.value_);
         }
@@ -289,7 +289,7 @@ namespace alg::data_struct {
             tree_.reserve(size);
         }
 
-        void push_back(const VT& value) noexcept {
+        void push_back(const ValueType& value) noexcept {
             value_.push_back(value);
 
             int64_t left = static_cast<int64_t>(value_.size()) - (static_cast<int64_t>(value_.size()) & -static_cast<int64_t>(value_.size()));
@@ -311,7 +311,7 @@ namespace alg::data_struct {
             value_.clear();
         }
 
-        void update(size_t id, const VT& value) {
+        void update(size_t id, const ValueType& value) {
             if (id >= value_.size()) {
                 throw func::AlgOutOfRange(__FILE__, __LINE__, "update, invalid index.\n\n");
             }
@@ -319,7 +319,7 @@ namespace alg::data_struct {
             change(id, reverse_operation_(value, value_[id]));
         }
 
-        void change(size_t id, const VT& delta) {
+        void change(size_t id, const ValueType& delta) {
             if (id >= value_.size()) {
                 throw func::AlgOutOfRange(__FILE__, __LINE__, "change, invalid index.\n\n");
             }

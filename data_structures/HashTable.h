@@ -4,12 +4,12 @@ namespace alg::data_struct {
 
 
     // Hash table with Robin Hood hashing, expected uniform hasher
-    // KT constructors required: KT(KT)
-    // VT constructors required: VT(), VT(VT)
-    // HR operators required: (KT) -> size_t
-    template <typename KT, typename VT, typename HR = std::hash<KT>>
+    // KeyType constructors required: KeyType(KeyType)
+    // ValueType constructors required: ValueType(), ValueType(ValueType)
+    // Hash operators required: (KeyType) -> size_t
+    template <typename KeyType, typename ValueType, typename Hash = std::hash<KeyType>>
     class HashTable {
-        using Accordance = std::pair<const KT, VT>;
+        using Accordance = std::pair<const KeyType, ValueType>;
 
         struct TableElement {
             size_t probe_sequence_length = 0;
@@ -34,15 +34,15 @@ namespace alg::data_struct {
 
         inline static const double LOAD_FACTOR = 0.75;
 
-        const HR& hasher_;
+        const Hash& hasher_;
         std::list<Accordance> accordances_;
         std::vector<TableElement> table_;
 
-        size_t hash_key(const KT& key) const {
+        size_t hash_key(const KeyType& key) const {
             return hasher_(key) % table_.size();
         }
 
-        size_t find_key(const KT& key) const {
+        size_t find_key(const KeyType& key) const {
             if (empty()) {
                 return table_.size();
             }
@@ -57,7 +57,7 @@ namespace alg::data_struct {
 
         size_t insert_accordance(typename std::list<Accordance>::iterator accordance_it) {
             size_t result_id = table_.size();
-            const KT& key = accordance_it->first;
+            const KeyType& key = accordance_it->first;
             TableElement new_element(accordance_it);
             for (size_t id = hash_key(key); true; id = id + 1 < table_.size() ? id + 1 : 0) {
                 TableElement& current_element = table_[id];
@@ -83,13 +83,13 @@ namespace alg::data_struct {
             return table_.size();
         }
 
-        size_t insert_accordance(const KT& key, const VT& value) {
+        size_t insert_accordance(const KeyType& key, const ValueType& value) {
             reserve(accordances_.size() + 1);
             accordances_.push_front({ key, value });
             return insert_accordance(accordances_.begin());
         }
 
-        void erase_key(const KT& key) {
+        void erase_key(const KeyType& key) {
             size_t key_id = find_key(key);
             if (key_id == table_.size()) {
                 return;
@@ -118,27 +118,27 @@ namespace alg::data_struct {
         using Iterator = typename std::list<Accordance>::iterator;
         using ConstIterator = typename std::list<Accordance>::const_iterator;
 
-        HashTable() : hasher_(HR()) {
+        HashTable() : hasher_(Hash()) {
         }
 
-        explicit HashTable(const HR& hasher) : hasher_(hasher) {
+        explicit HashTable(const Hash& hasher) : hasher_(hasher) {
         }
 
         template <typename It>
-        HashTable(It begin, It end, const HR& hasher = HR()) : hasher_(hasher) {
+        HashTable(It begin, It end, const Hash& hasher = Hash()) : hasher_(hasher) {
             for (; begin != end; ++begin) {
                 insert(*begin);
             }
         }
 
-        HashTable(const std::initializer_list<std::pair<KT, VT>>& init, const HR& hasher = HR()) : hasher_(hasher) {
+        HashTable(const std::initializer_list<std::pair<KeyType, ValueType>>& init, const Hash& hasher = Hash()) : hasher_(hasher) {
             reserve(init.size());
             for (const auto& [key, value] : init) {
                 insert_accordance(key, value);
             }
         }
 
-        HashTable<KT, VT, HR>& operator=(const HashTable<KT, VT, HR>& other)& {
+        HashTable<KeyType, ValueType, Hash>& operator=(const HashTable<KeyType, ValueType, Hash>& other)& {
             std::list<Accordance> accordances_copy(other.accordances_);
             accordances_.swap(accordances_copy);
 
@@ -146,7 +146,7 @@ namespace alg::data_struct {
             return *this;
         }
 
-        bool operator==(const HashTable<KT, VT, HR>& other) const {
+        bool operator==(const HashTable<KeyType, ValueType, Hash>& other) const {
             for (const auto& [key, value] : *this) {
                 auto it = other.find(key);
                 if (it == other.end() || it->second != value) {
@@ -164,16 +164,16 @@ namespace alg::data_struct {
             return true;
         }
 
-        bool operator!=(const HashTable<KT, VT, HR>& other) const {
+        bool operator!=(const HashTable<KeyType, ValueType, Hash>& other) const {
             return !(*this == other);
         }
 
-        VT& operator[](const KT& key) {
-            size_t key_id = insert_accordance(key, VT());
+        ValueType& operator[](const KeyType& key) {
+            size_t key_id = insert_accordance(key, ValueType());
             return table_[key_id].accordance_it->second;
         }
 
-        const VT& at(const KT& key) const {
+        const ValueType& at(const KeyType& key) const {
             size_t key_id = find_key(key);
             if (key_id == table_.size()) {
                 throw func::AlgRuntimeError(__FILE__, __LINE__, "at, invalid key.\n\n");
@@ -182,11 +182,11 @@ namespace alg::data_struct {
             return table_[key_id].accordance_it->second;
         }
 
-        bool contains(const KT& key) const {
+        bool contains(const KeyType& key) const {
             return find_key(key) != table_.size();
         }
 
-        Iterator find(const KT& key) {
+        Iterator find(const KeyType& key) {
             size_t key_id = find_key(key);
             if (key_id == table_.size()) {
                 return end();
@@ -195,7 +195,7 @@ namespace alg::data_struct {
             return table_[key_id].accordance_it;
         }
 
-        ConstIterator find(const KT& key) const {
+        ConstIterator find(const KeyType& key) const {
             size_t key_id = find_key(key);
             if (key_id == table_.size()) {
                 return end();
@@ -220,7 +220,7 @@ namespace alg::data_struct {
             return accordances_.end();
         }
 
-        const HR& hash_function() const noexcept {
+        const Hash& hash_function() const noexcept {
             return hasher_;
         }
 
@@ -232,16 +232,16 @@ namespace alg::data_struct {
             return accordances_.empty();
         }
 
-        void swap(HashTable<KT, VT, HR>& other) noexcept {
+        void swap(HashTable<KeyType, ValueType, Hash>& other) noexcept {
             accordances_.swap(other.accordances_);
             table_.swap(other.table_);
         }
 
-        void insert(const std::pair<KT, VT>& accordance) {
+        void insert(const std::pair<KeyType, ValueType>& accordance) {
             insert_accordance(accordance.first, accordance.second);
         }
 
-        void erase(const KT& key) {
+        void erase(const KeyType& key) {
             erase_key(key);
         }
 

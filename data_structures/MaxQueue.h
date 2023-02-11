@@ -3,10 +3,10 @@ namespace alg::data_struct {
     // vvv ----------MaxQueue--------- vvv
 
 
-    template <typename VT = int64_t, typename PR = std::less<VT>>  // Constructors required: VT(), VT(VT); Operators required: <(VT, VT)
+    template <typename ValueType = int64_t, typename Predicate = std::less<ValueType>>  // Constructors required: ValueType(), ValueType(ValueType); Operators required: <(ValueType, ValueType)
     class MaxQueue {
         struct QueueElement {
-            VT value = VT();
+            ValueType value = ValueType();
             size_t id = 0;
         };
 
@@ -15,7 +15,7 @@ namespace alg::data_struct {
 
         std::deque<QueueElement> max_queue_;
 
-        template <typename T>  // Casts required: VT(T)
+        template <typename T>  // Casts required: ValueType(T)
         void build_queue(const std::vector<T>& value) noexcept {
             for (const T& element : value) {
                 push(element);
@@ -26,16 +26,16 @@ namespace alg::data_struct {
         MaxQueue() noexcept {
         }
 
-        MaxQueue(size_t size, const VT& init) noexcept {
-            build_queue(std::vector<VT>(size, init));
+        MaxQueue(size_t size, const ValueType& init) noexcept {
+            build_queue(std::vector<ValueType>(size, init));
         }
 
-        template <typename T>  // Casts required: VT(T)
+        template <typename T>  // Casts required: ValueType(T)
         MaxQueue(const std::vector<T>& init) noexcept {
             build_queue(init);
         }
 
-        template <typename T>  // Casts required: VT(T)
+        template <typename T>  // Casts required: ValueType(T)
         MaxQueue(const std::initializer_list<T>& init) noexcept {
             build_queue(std::vector<T>(init));
         }
@@ -48,7 +48,7 @@ namespace alg::data_struct {
             return right_id_;
         }
 
-        VT max_element() const {
+        ValueType max_element() const {
             if (empty()) {
                 throw func::AlgRuntimeError(__FILE__, __LINE__, "max_element, attempt to find maximal element in empty queue.\n\n");
             }
@@ -82,8 +82,8 @@ namespace alg::data_struct {
             max_queue_.reserve(size);
         }
 
-        size_t push(const VT& value) noexcept {
-            while (!max_queue_.empty() && PR()(max_queue_.back().value, value)) {
+        size_t push(const ValueType& value) noexcept {
+            while (!max_queue_.empty() && Predicate()(max_queue_.back().value, value)) {
                 max_queue_.pop_back();
             }
 
@@ -122,8 +122,8 @@ namespace alg::data_struct {
         friend std::ostream& operator<<(std::ostream& fout, const MaxQueue<T, PRED>& vector) noexcept;
     };
 
-    template <typename T, typename PR>
-    std::istream& operator>>(std::istream& fin, MaxQueue<T, PR>& max_queue) noexcept {
+    template <typename T, typename Predicate>
+    std::istream& operator>>(std::istream& fin, MaxQueue<T, Predicate>& max_queue) noexcept {
         size_t size = max_queue.size();
         max_queue.clear();
         for (size_t i = 0; i < size; ++i) {
@@ -135,8 +135,8 @@ namespace alg::data_struct {
         return fin;
     }
 
-    template <typename T, typename PR>
-    std::ostream& operator<<(std::ostream& fout, const MaxQueue<T, PR>& max_queue) noexcept {
+    template <typename T, typename Predicate>
+    std::ostream& operator<<(std::ostream& fout, const MaxQueue<T, Predicate>& max_queue) noexcept {
         fout << "Left id: " << max_queue.left_id_ << "\n";
         fout << "Right id: " << max_queue.right_id_ << "\n";
         fout << "Queue state:\n";

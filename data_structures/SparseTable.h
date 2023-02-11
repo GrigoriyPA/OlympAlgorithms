@@ -3,16 +3,16 @@ namespace alg::data_struct {
     // vvv --------SparseTable-------- vvv
 
 
-    // VT constructors required: VT(VT); operators required: =(VT, VT)
-    // PR operators required: (VT, VT) -> bool
-    template <typename VT = int64_t, typename PR = std::less<VT>>
+    // ValueType constructors required: ValueType(ValueType); operators required: =(ValueType, ValueType)
+    // Predicate operators required: (ValueType, ValueType) -> bool
+    template <typename ValueType = int64_t, typename Predicate = std::less<ValueType>>
     class SparseTable {
         inline static std::vector<uint32_t> log2_ = { 0 };
 
-        const PR& predicate_;
-        std::vector<std::vector<VT>> table_;
+        const Predicate& predicate_;
+        std::vector<std::vector<ValueType>> table_;
 
-        void build(const std::vector<VT>& init) {
+        void build(const std::vector<ValueType>& init) {
             if (init.empty()) {
                 table_.resize(1);
                 return;
@@ -25,8 +25,8 @@ namespace alg::data_struct {
             for (uint32_t degree = 1; degree < table_.size(); ++degree) {
                 table_[degree].reserve(init.size() + 1 - static_cast<size_t>(1 << degree));
                 for (size_t i = 0; i + static_cast<size_t>(1 << degree) <= init.size(); ++i) {
-                    const VT& left = table_[degree - 1][i];
-                    const VT& right = table_[degree - 1][i + static_cast<size_t>(1 << (degree - 1))];
+                    const ValueType& left = table_[degree - 1][i];
+                    const ValueType& right = table_[degree - 1][i + static_cast<size_t>(1 << (degree - 1))];
                     table_[degree].push_back(predicate_(left, right) ? left : right);
                 }
             }
@@ -41,48 +41,48 @@ namespace alg::data_struct {
         }
 
     public:
-        using ConstIterator = std::vector<VT>::const_iterator;
+        using ConstIterator = std::vector<ValueType>::const_iterator;
 
-        SparseTable() : predicate_(PR()) {
+        SparseTable() : predicate_(Predicate()) {
             build({});
         }
 
-        explicit SparseTable(const PR& predicate) : predicate_(predicate) {
+        explicit SparseTable(const Predicate& predicate) : predicate_(predicate) {
             build({});
         }
 
-        explicit SparseTable(size_t size, const VT& value = VT(), const PR& predicate = PR()) : predicate_(predicate) {
-            build(std::vector<VT>(size, value));
+        explicit SparseTable(size_t size, const ValueType& value = ValueType(), const Predicate& predicate = Predicate()) : predicate_(predicate) {
+            build(std::vector<ValueType>(size, value));
         }
 
-        SparseTable(const std::initializer_list<VT>& init, const PR& predicate = PR()) : predicate_(predicate) {
+        SparseTable(const std::initializer_list<ValueType>& init, const Predicate& predicate = Predicate()) : predicate_(predicate) {
             build(init);
         }
 
-        explicit SparseTable(const std::vector<VT>& init, const PR& predicate = PR()) : predicate_(predicate) {
+        explicit SparseTable(const std::vector<ValueType>& init, const Predicate& predicate = Predicate()) : predicate_(predicate) {
             build(init);
         }
 
-        SparseTable<VT, PR>& operator=(const SparseTable<VT, PR>& other)& {
+        SparseTable<ValueType, Predicate>& operator=(const SparseTable<ValueType, Predicate>& other)& {
             table_ = other.table_;
             return *this;
         }
 
-        SparseTable<VT, PR>& operator=(const std::vector<VT>& value)& {
+        SparseTable<ValueType, Predicate>& operator=(const std::vector<ValueType>& value)& {
             clear();
             build(value);
             return *this;
         }
 
-        bool operator==(const SparseTable<VT, PR>& other) const {
+        bool operator==(const SparseTable<ValueType, Predicate>& other) const {
             return table_[0] == other.table_[0];
         }
 
-        bool operator!=(const SparseTable<VT, PR>& other) const {
+        bool operator!=(const SparseTable<ValueType, Predicate>& other) const {
             return table_[0] != other.table_[0];
         }
 
-        const VT& operator[](size_t index) const {
+        const ValueType& operator[](size_t index) const {
             if (index >= size()) {
                 throw func::AlgOutOfRange(__FILE__, __LINE__, "operator[], invalid index.\n\n");
             }
@@ -90,7 +90,7 @@ namespace alg::data_struct {
             return table_[0][index];
         }
 
-        const VT& top_element(size_t left, size_t right) const {
+        const ValueType& top_element(size_t left, size_t right) const {
             if (left > right) {
                 throw func::AlgInvalidArgument(__FILE__, __LINE__, "top_element, invalid range.\n\n");
             }
@@ -100,8 +100,8 @@ namespace alg::data_struct {
             }
 
             uint32_t degree = log2_[right - left];
-            const VT& left_val = table_[degree][left];
-            const VT& right_val = table_[degree][right + 1 - static_cast<size_t>(1 << degree)];
+            const ValueType& left_val = table_[degree][left];
+            const ValueType& right_val = table_[degree][right + 1 - static_cast<size_t>(1 << degree)];
             return predicate_(left_val, right_val) ? left_val : right_val;
         }
 
@@ -113,7 +113,7 @@ namespace alg::data_struct {
             return table_[0].empty();
         }
 
-        const VT& front() const {
+        const ValueType& front() const {
             if (empty()) {
                 throw func::AlgRuntimeError(__FILE__, __LINE__, "front, called from empty table.\n\n");
             }
@@ -121,7 +121,7 @@ namespace alg::data_struct {
             return table_[0].front();
         }
 
-        const VT& back() const {
+        const ValueType& back() const {
             if (empty()) {
                 throw func::AlgRuntimeError(__FILE__, __LINE__, "back, called from empty table.\n\n");
             }
@@ -137,7 +137,7 @@ namespace alg::data_struct {
             return table_[0].end();
         }
 
-        void swap(SparseTable<VT, PR>& other) noexcept {
+        void swap(SparseTable<ValueType, Predicate>& other) noexcept {
             table_.swap(other.table_);
         }
 
@@ -156,7 +156,7 @@ namespace alg::data_struct {
             }
         }
 
-        void push_back(const VT& value) {
+        void push_back(const ValueType& value) {
             update_log2(size() + 1);
             if (table_.size() < log2_[size()] + 1) {
                 table_.resize(log2_[size()] + 1);
@@ -169,8 +169,8 @@ namespace alg::data_struct {
                     break;
                 }
 
-                const VT& left = table_[degree - 1][table_[degree].size()];
-                const VT& right = table_[degree - 1][right_id];
+                const ValueType& left = table_[degree - 1][table_[degree].size()];
+                const ValueType& right = table_[degree - 1][right_id];
                 table_[degree].push_back(predicate_(left, right) ? left : right);
             }
         }
