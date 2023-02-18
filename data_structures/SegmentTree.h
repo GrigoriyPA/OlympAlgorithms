@@ -3,30 +3,33 @@ namespace alg::data_struct {
     // -----------------------------------
 
 
+    // Other Node classes must derive from SegmentTreeNode and override all functions, that they use
     struct SegmentTreeNode {
         SegmentTreeNode() {
         }
 
-        template <typename T>
+        template <typename T>  // First node initialization (called in build)
         SegmentTreeNode(const T& x) {
         }
 
+        // Push accumulated value to children (called in get_result, descent, update_segment)
         void push(SegmentTreeNode& left, SegmentTreeNode& right) {
         }
 
-        template <typename T>
+        template <typename T>  // Update node accumulated value (called in update_segment)
         void update(const T& value) {
         }
 
-        template <typename T>
+        template <typename T>  // Returns true if a descent result is found in this node subtree (called in descent)
         bool check_descent_value(const T& descent_value) {
             return false;
         }
 
-        template <typename T>
+        template <typename T>  // Update descent value after exiting node subtree (called in descent)
         void change_descent_value(T& descent_value) {
         }
 
+        // Calculate node value from children values (called in all functions)
         static SegmentTreeNode unite(const SegmentTreeNode& left, const SegmentTreeNode& right) {
             return left;
         }
@@ -38,6 +41,7 @@ namespace alg::data_struct {
     // vvv --------SegmentTree-------- vvv
 
 
+    // Expected: class Node : public SegmentTreeNode {}
     template <typename Node = SegmentTreeNode>
     class SegmentTree {
         size_t tree_size_;
