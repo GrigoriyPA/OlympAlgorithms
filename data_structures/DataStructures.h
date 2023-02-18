@@ -8,5 +8,6 @@
 #include "MaxQueue.h"
 #include "HashTable.h"
 #include "SparseTable.h"
+#include "SegmentTree.h"
 
 // Version: 1.0
