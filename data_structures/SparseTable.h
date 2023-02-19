@@ -1,6 +1,6 @@
 namespace alg::data_struct {
     // -----------------------------------
-    // vvv --------SparseTable-------- vvv
+    // vvv -------SparseTable1D------- vvv
 
 
     // ValueType constructors required: ValueType(ValueType); operators required: =(ValueType, ValueType)
@@ -91,13 +91,13 @@ namespace alg::data_struct {
             return table_[0][index];
         }
 
-        ValueType top_element(size_t left, size_t right) const {
+        ValueType get_result(size_t left, size_t right) const {
             if (left > right) {
-                throw func::AlgInvalidArgument(__FILE__, __LINE__, "top_element, invalid range.\n\n");
+                throw func::AlgInvalidArgument(__FILE__, __LINE__, "get_result, invalid range.\n\n");
             }
 
             if (right >= size()) {
-                throw func::AlgOutOfRange(__FILE__, __LINE__, "top_element, invalid range size.\n\n");
+                throw func::AlgOutOfRange(__FILE__, __LINE__, "get_result, invalid range size.\n\n");
             }
 
             uint32_t degree = log2_[right - left];
@@ -193,7 +193,169 @@ namespace alg::data_struct {
     };
 
 
-    // ^^^ --------SparseTable-------- ^^^
+    // ^^^ -------SparseTable1D------- ^^^
+    // -----------------------------------
+    // vvv -------SparseTable2D------- vvv
+
+
+    // ValueType constructors required: ValueType(ValueType); operators required: =(ValueType, ValueType)
+    // Operation operators required: (ValueType, ValueType) -> ValueType
+    // Expected: Operation -- associativity, commutativity, idempotence
+    template <typename ValueType = int64_t, typename Operation = std::bit_or<ValueType>>
+    class SparseTable2D {
+        inline static std::vector<uint32_t> log2_ = { 0 };
+
+        const Operation& operation_;
+        std::vector<std::vector<std::vector<std::vector<ValueType>>>> table_;
+
+        void build(const std::vector<std::vector<ValueType>>& init) {
+            size_t init_width = init[0].size();
+            for (const auto& element : init) {
+                if (element.size() != init_width) {
+                    throw func::AlgInvalidArgument(__FILE__, __LINE__, "build, init matrix is not rectangle.\n\n");
+                }
+            }
+
+            if (init.empty() || init_width == 0) {
+                table_.resize(1, std::vector<std::vector<std::vector<ValueType>>>(1));
+                return;
+            }
+
+            update_log2(std::max(init.size(), init_width));
+            table_.resize(log2_[init.size() - 1] + 1, std::vector<std::vector<std::vector<ValueType>>>(log2_[init_width - 1] + 1));
+
+            table_[0][0] = init;
+            for (uint32_t degree_x = 0; degree_x < table_.size(); ++degree_x) {
+                for (uint32_t degree_y = 0; degree_y < table_[degree_x].size(); ++degree_y) {
+                    if (degree_x == 0 && degree_y == 0) {
+                        continue;
+                    }
+
+                    table_[degree_x][degree_y].resize(init.size() + 1 - static_cast<size_t>(1 << degree_x));
+                    for (size_t i = 0; i + static_cast<size_t>(1 << degree_x) <= init.size(); ++i) {
+                        table_[degree_x][degree_y][i].reserve(init[i].size() + 1 - static_cast<size_t>(1 << degree_y));
+                        for (size_t j = 0; j + static_cast<size_t>(1 << degree_y) <= init[i].size(); ++j) {
+                            if (degree_x == 0) {
+                                const ValueType& left = table_[degree_x][degree_y - 1][i][j];
+                                const ValueType& right = table_[degree_x][degree_y - 1][i][j + static_cast<size_t>(1 << (degree_y - 1))];
+                                table_[degree_x][degree_y][i].push_back(operation_(left, right));
+                            }
+                            else {
+                                const ValueType& left = table_[degree_x - 1][degree_y][i][j];
+                                const ValueType& right = table_[degree_x - 1][degree_y][i + static_cast<size_t>(1 << (degree_x - 1))][j];
+                                table_[degree_x][degree_y][i].push_back(operation_(left, right));
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        static void update_log2(size_t new_size) {
+            log2_.reserve(new_size);
+            while (log2_.size() < new_size) {
+                log2_.push_back(log2_.back());
+                log2_.back() += static_cast<size_t>(1 << (log2_.back() + 1)) <= log2_.size();
+            }
+        }
+
+    public:
+        SparseTable2D() : operation_(Operation()) {
+            build({});
+        }
+
+        explicit SparseTable2D(const Operation& operation) : operation_(operation) {
+            build({});
+        }
+
+        explicit SparseTable2D(size_t height, size_t width, const ValueType& value = ValueType(), const Operation& operation = Operation()) : operation_(operation) {
+            build(std::vector<std::vector<ValueType>>(height, std::vector<ValueType>(width, value)));
+        }
+
+        SparseTable2D(const std::initializer_list<std::initializer_list<ValueType>>& init, const Operation& operation = Operation()) : operation_(operation) {
+            std::vector<std::vector<ValueType>> vector_init(init.size());
+            for (const auto& element : init) {
+                vector_init.emplace_back(element);
+            }
+            build(vector_init);
+        }
+
+        explicit SparseTable2D(const std::vector<std::vector<ValueType>>& init, const Operation& operation = Operation()) : operation_(operation) {
+            build(init);
+        }
+
+        SparseTable2D<ValueType, Operation>& operator=(const SparseTable2D<ValueType, Operation>& other)& {
+            table_ = other.table_;
+            return *this;
+        }
+
+        SparseTable2D<ValueType, Operation>& operator=(const std::vector<std::vector<ValueType>>& value)& {
+            clear();
+            build(value);
+            return *this;
+        }
+
+        bool operator==(const SparseTable2D<ValueType, Operation>& other) const {
+            return table_[0][0] == other.table_[0][0];
+        }
+
+        bool operator!=(const SparseTable2D<ValueType, Operation>& other) const {
+            return table_[0][0] != other.table_[0][0];
+        }
+
+        const std::vector<ValueType>& operator[](size_t index) const {
+            if (index >= height()) {
+                throw func::AlgOutOfRange(__FILE__, __LINE__, "operator[], invalid index.\n\n");
+            }
+
+            return table_[0][0][index];
+        }
+
+        ValueType get_result(size_t up, size_t left, size_t down, size_t right) const {
+            if (left > right || up > down) {
+                throw func::AlgInvalidArgument(__FILE__, __LINE__, "get_result, invalid range.\n\n");
+            }
+
+            if (down >= height() || right >= width()) {
+                throw func::AlgOutOfRange(__FILE__, __LINE__, "get_result, invalid range size.\n\n");
+            }
+
+            uint32_t degree_x = log2_[down - up];
+            uint32_t degree_y = log2_[right - left];
+            const ValueType& up_left_val = table_[degree_x][degree_y][up][left];
+            const ValueType& up_right_val = table_[degree_x][degree_y][up][right + 1 - static_cast<size_t>(1 << degree_y)];
+            const ValueType& down_left_val = table_[degree_x][degree_y][down + 1 - static_cast<size_t>(1 << degree_x)][left];
+            const ValueType& down_right_val = table_[degree_x][degree_y][down + 1 - static_cast<size_t>(1 << degree_x)][right + 1 - static_cast<size_t>(1 << degree_y)];
+            return operation_(operation_(up_left_val, up_right_val), operation_(down_left_val, down_right_val));
+        }
+
+        size_t height() const noexcept {
+            return table_[0][0].size();
+        }
+
+        size_t width() const noexcept {
+            if (table_[0][0].empty()) {
+                return 0;
+            }
+            return table_[0][0][0].size();
+        }
+
+        bool empty() const noexcept {
+            return table_[0][0].empty();
+        }
+
+        void swap(SparseTable2D<ValueType, Operation>& other) noexcept {
+            table_.swap(other.table_);
+        }
+
+        void clear() {
+            table_.clear();
+            table_.resize(1, std::vector<std::vector<std::vector<ValueType>>>(1));
+        }
+    };
+
+
+    // ^^^ -------SparseTable2D------- ^^^
     // -----------------------------------
     // vvv ----DisjointSparseTable---- vvv
 
@@ -304,13 +466,13 @@ namespace alg::data_struct {
             return table_[0][index];
         }
 
-        ValueType top_element(size_t left, size_t right) const {
+        ValueType get_result(size_t left, size_t right) const {
             if (left > right) {
-                throw func::AlgInvalidArgument(__FILE__, __LINE__, "top_element, invalid range.\n\n");
+                throw func::AlgInvalidArgument(__FILE__, __LINE__, "get_result, invalid range.\n\n");
             }
 
             if (right >= size()) {
-                throw func::AlgOutOfRange(__FILE__, __LINE__, "top_element, invalid range size.\n\n");
+                throw func::AlgOutOfRange(__FILE__, __LINE__, "get_result, invalid range size.\n\n");
             }
 
             if (left == right) {
@@ -371,6 +533,6 @@ namespace alg::data_struct {
 
     // ^^^ ----DisjointSparseTable---- ^^^
     // -----------------------------------
-}   // SparseTable, DisjointSparseTable | Version: 1.0
+}   // SparseTable1D, SparseTable2D, DisjointSparseTable | Version: 1.0
 
 using namespace alg::data_struct;

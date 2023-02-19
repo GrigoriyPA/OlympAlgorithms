@@ -250,9 +250,9 @@ namespace alg::data_struct {
             return value_.end();
         }
 
-        ValueType prefix_sum(size_t prfix_size) const {
+        ValueType get_prefix_result(size_t prfix_size) const {
             if (prfix_size == 0 || prfix_size > value_.size()) {
-                throw func::AlgOutOfRange(__FILE__, __LINE__, "prefix_sum, invalid prfix size.\n\n");
+                throw func::AlgOutOfRange(__FILE__, __LINE__, "get_prefix_result, invalid prfix size.\n\n");
             }
 
             ValueType result(tree_[prfix_size - 1]);
@@ -264,19 +264,19 @@ namespace alg::data_struct {
             return result;
         }
 
-        ValueType sum(size_t left, size_t right) const {
+        ValueType get_result(size_t left, size_t right) const {
             if (left > right) {
-                throw func::AlgInvalidArgument(__FILE__, __LINE__, "sum, invalid range.\n\n");
+                throw func::AlgInvalidArgument(__FILE__, __LINE__, "get_result, invalid range.\n\n");
             }
 
             if (right >= value_.size()) {
-                throw func::AlgOutOfRange(__FILE__, __LINE__, "sum, invalid range size.\n\n");
+                throw func::AlgOutOfRange(__FILE__, __LINE__, "get_result, invalid range size.\n\n");
             }
 
             if (left == 0) {
-                return prefix_sum(right + 1);
+                return get_prefix_result(right + 1);
             }
-            return reverse_operation_(prefix_sum(right + 1), prefix_sum(left));
+            return reverse_operation_(get_prefix_result(right + 1), get_prefix_result(left));
         }
 
         void swap(FenwickTree<ValueType, ForwardOperation, ReverseOperation>& other) noexcept {
@@ -294,7 +294,7 @@ namespace alg::data_struct {
 
             int64_t left = static_cast<int64_t>(value_.size()) - (static_cast<int64_t>(value_.size()) & -static_cast<int64_t>(value_.size()));
             int64_t right = static_cast<int64_t>(value_.size()) - 2;
-            tree_.push_back(left <= right ? forward_operation_(sum(left, right), value) : value);
+            tree_.push_back(left <= right ? forward_operation_(get_result(left, right), value) : value);
         }
 
         void pop_back() {
