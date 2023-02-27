@@ -284,7 +284,7 @@ namespace alg::data_struct {
             value_.swap(other.value_);
         }
 
-        void reserve(size_t size) noexcept {
+        void reserve(size_t size) {
             value_.reserve(size);
             tree_.reserve(size);
         }

@@ -9,5 +9,6 @@
 #include "HashTable.h"
 #include "SparseTable.h"
 #include "SegmentTree.h"
+#include "HeapTree.h"
 
 // Version: 1.0

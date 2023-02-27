@@ -198,7 +198,7 @@ namespace alg::data_struct {
             clear();
             tree_size_ = value.size();
             if (value.empty()) {
-                return;
+                return *this;
             }
 
             tree_.resize(4 * value.size() + 1);
@@ -220,11 +220,27 @@ namespace alg::data_struct {
 
         template <typename T>
         size_t descent(size_t left, size_t right, const T& value) {
+            if (left > right) {
+                throw func::AlgInvalidArgument(__FILE__, __LINE__, "descent, invalid range.\n\n");
+            }
+
+            if (right >= tree_size_) {
+                throw func::AlgOutOfRange(__FILE__, __LINE__, "descent, invalid range size.\n\n");
+            }
+
             return descent(1, 0, tree_size_ - 1, left, right, value).first;
         }
 
         template <typename T>
         void update_segment(size_t left, size_t right, const T& value) {
+            if (left > right) {
+                throw func::AlgInvalidArgument(__FILE__, __LINE__, "update_segment, invalid range.\n\n");
+            }
+
+            if (right >= tree_size_) {
+                throw func::AlgOutOfRange(__FILE__, __LINE__, "update_segment, invalid range size.\n\n");
+            }
+
             update_segment(1, 0, tree_size_ - 1, left, right, value);
         }
 
