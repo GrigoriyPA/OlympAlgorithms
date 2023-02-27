@@ -301,6 +301,11 @@ namespace alg::data_struct {
         }
 
     public:
+        HeapTree(uint64_t seed) {
+            tree_size_ = 0;
+            generator_.seed(seed);
+        }
+
         template <typename T>
         HeapTree(size_t size, const T& value, uint64_t seed) {
             tree_size_ = size;
@@ -320,6 +325,14 @@ namespace alg::data_struct {
             tree_size_ = init.size();
             generator_.seed(seed);
             build(init);
+        }
+
+        template <typename T>
+        HeapTree<Node>& operator=(const std::vector<T>& value)& {
+            clear();
+            tree_size_ = value.size();
+            build(value);
+            return *this;
         }
 
         Node get_result(size_t left, size_t right) {
