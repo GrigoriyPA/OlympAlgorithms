@@ -21,6 +21,26 @@ namespace alg::math {
         return binary_exponentiation_modul(value, uint32_t(modul - 2), modul, one);
     }
 
+    std::vector<std::pair<uint64_t, uint32_t>> factorization(uint64_t value) {
+        std::vector<std::pair<uint64_t, uint32_t>> result;
+        result.reserve(8 * sizeof(value));
+        for (uint64_t divider = 2; divider * divider <= value; ++divider) {
+            if (value % divider != 0) {
+                continue;
+            }
+
+            result.emplace_back(divider, 0);
+            for (; value % divider == 0; value /= divider) {
+                ++result.back().second;
+            }
+        }
+
+        if (value > 1) {
+            result.emplace_back(value, 1);
+        }
+        return result;
+    }
+
 
     // ^^^ ---------Functions--------- ^^^
     // -----------------------------------
