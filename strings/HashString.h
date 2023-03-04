@@ -131,7 +131,7 @@ namespace alg::str {
     // Expected BASE and MODUL:
     // -- BASE, MODUL - prime values
     // -- 256 < BASE < MODUL < 2^32
-    template <uint64_t BASE = 263, uint64_t MODUL = 1000000007>
+    template <uint64_t BASE = 263, uint64_t MODUL = 998244353>
     class HashString {
         inline static std::vector<uint64_t> power_ = std::vector<uint64_t>(1, 1);
 
