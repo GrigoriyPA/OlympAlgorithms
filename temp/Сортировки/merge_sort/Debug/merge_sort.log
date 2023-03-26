@@ -1,6 +1,0 @@
-﻿  main.cpp
-D:\Projects_C++\Сортировки\merge_sort\main.cpp(11,14): warning C4018: <: несоответствие типов со знаком и без знака
-D:\Projects_C++\Сортировки\merge_sort\main.cpp(11,30): warning C4018: <: несоответствие типов со знаком и без знака
-D:\Projects_C++\Сортировки\merge_sort\main.cpp(22,14): warning C4018: <: несоответствие типов со знаком и без знака
-D:\Projects_C++\Сортировки\merge_sort\main.cpp(26,14): warning C4018: <: несоответствие типов со знаком и без знака
-  merge_sort.vcxproj -> D:\Projects_C++\Сортировки\merge_sort\Debug\merge_sort.exe

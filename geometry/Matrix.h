@@ -994,7 +994,7 @@ namespace alg::geom {
                 {     c + x * x * (1 - c), x * y * (1 - c) - z * s, x * z * (1 - c) + y * s, ValueType(0.0) },
                 { y * x * (1 - c) + z * s,     c + y * y * (1 - c), y * z * (1 - c) - x * s, ValueType(0.0) },
                 { z * x * (1 - c) - y * s, z * y * (1 - c) + x * s,     c + z * z * (1 - c), ValueType(0.0) },
-                {                 ValueType(0.0),                 ValueType(0.0),                 ValueType(0.0), ValueType(1.0) },
+                {          ValueType(0.0),          ValueType(0.0),          ValueType(0.0), ValueType(1.0) },
             });
         }
 

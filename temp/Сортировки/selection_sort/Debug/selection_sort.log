@@ -1,3 +1,0 @@
-﻿  main.cpp
-D:\Projects_C++\sorting\selection_sort\main.cpp(11,31): warning C4018: <: несоответствие типов со знаком и без знака
-  selection_sort.vcxproj -> D:\Projects_C++\sorting\selection_sort\Debug\selection_sort.exe

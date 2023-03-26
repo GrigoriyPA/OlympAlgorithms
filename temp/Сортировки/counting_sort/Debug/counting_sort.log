@@ -1,3 +1,0 @@
-﻿  main.cpp
-D:\Projects_C++\sorting\counting_sort\main.cpp(22,23): warning C4018: <: несоответствие типов со знаком и без знака
-  counting_sort.vcxproj -> D:\Projects_C++\sorting\counting_sort\Debug\counting_sort.exe
