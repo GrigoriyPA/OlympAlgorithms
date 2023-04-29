@@ -105,6 +105,35 @@ namespace alg::graph {
     };
 
 
+    struct CapacityEdgeInfo {
+        size_t from = 0;
+        size_t to = 0;
+        int64_t capacity = 0;
+        int64_t cost = 0;
+        size_t id = 0;
+
+        CapacityEdgeInfo(size_t from, size_t to, int64_t capacity, int64_t cost, size_t id = 0) noexcept {
+            this->from = from;
+            this->to = to;
+            this->capacity = capacity;
+            this->cost = cost;
+            this->id = id;
+        }
+
+        explicit operator WeightedEdgeInfo() const noexcept {
+            return WeightedEdgeInfo(from, to, cost, id);
+        }
+
+        explicit operator EdgeInfo() const noexcept {
+            return EdgeInfo(from, to, id);
+        }
+
+        bool operator <(const CapacityEdge& other) const noexcept {
+            return cost < other.cost;
+        }
+    };
+
+
     // ^^^ -------WeightedEdges------- ^^^
     // -----------------------------------
 }   // Edges, WeightedEdges | Version: 0.0

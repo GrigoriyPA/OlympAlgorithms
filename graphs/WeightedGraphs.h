@@ -128,6 +128,55 @@ namespace alg::graph {
             return false;
         }
 
+        std::pair<int64_t, std::vector<CapacityEdgeInfo>> interal_simple_decomposition_finding(size_t start, std::vector<size_t>& current_edge, std::vector<int64_t>& current_flow) const {
+            std::vector<CapacityEdgeInfo> used_edges;
+            used_edges.reserve(size());
+
+            std::vector<bool> used(size(), false);
+
+            size_t vertex = start;
+            for (; !used[vertex];) {
+                if (vertex == terminal) {
+                    break;
+                }
+
+                CapacityEdgeInfo next_edge(0, 0, 0, 0, std::numeric_limits<size_t>::max());
+                for (; current_edge[vertex] < adj[vertex].size(); ++current_edge[vertex]) {
+                    auto [to, capacity, cost, id] = adj[vertex][current_edge[vertex]];
+
+                    if (id % 2 == 0 && flow[id] > current_flow[id / 2]) {
+                        next_edge = CapacityEdgeInfo(vertex, to, capacity, cost, id / 2);
+                        break;
+                    }
+                }
+
+                if (next_edge.id == std::numeric_limits<size_t>::max()) {
+                    return { 0, {} };
+                }
+
+                used_edges.push_back(next_edge);
+
+                used[vertex] = true;
+                vertex = next_edge.to;
+            }
+
+            if (used[vertex]) {
+                reverse(used_edges.begin(), used_edges.end());
+                for (; used_edges.back().from != vertex; used_edges.pop_back()) {}
+                reverse(used_edges.begin(), used_edges.end());
+            }
+
+            int64_t flow_delta = std::numeric_limits<int64_t>::max();
+            for (const CapacityEdgeInfo& edge : used_edges) {
+                flow_delta = std::min(flow_delta, flow[2 * edge.id] - current_flow[edge.id]);
+            }
+            for (const CapacityEdgeInfo& edge : used_edges) {
+                current_flow[edge.id] += flow_delta;
+            }
+
+            return { flow_delta, used_edges };
+        }
+
     public:
         template <typename T>
         CapacityGraph(const std::vector<std::vector<T>>& adjacency_list) {
@@ -171,6 +220,26 @@ namespace alg::graph {
                 result += flow[id];
             }
             return result;
+        }
+
+        std::vector<std::pair<int64_t, std::vector<CapacityEdgeInfo>>> get_flow_decomposition() const {
+            std::vector<std::pair<int64_t, std::vector<CapacityEdgeInfo>>> decomposition;
+
+            std::vector<size_t> current_edge(size(), 0);
+            std::vector<int64_t> current_flow(number_of_edges, 0);
+            for (auto [flow_delta, edges] = interal_simple_decomposition_finding(source, current_edge, current_flow); flow_delta > 0;) {
+                decomposition.emplace_back(flow_delta, edges);
+                std::tie(flow_delta, edges) = interal_simple_decomposition_finding(source, current_edge, current_flow);
+            }
+
+            for (size_t vertex = 0; vertex < size(); ++vertex) {
+                for (auto [flow_delta, edges] = interal_simple_decomposition_finding(source, current_edge, current_flow); flow_delta > 0;) {
+                    decomposition.emplace_back(flow_delta, edges);
+                    std::tie(flow_delta, edges) = interal_simple_decomposition_finding(source, current_edge, current_flow);
+                }
+            }
+
+            return decomposition;
         }
 
         size_t push_edge(size_t from, size_t to, int64_t capacity, int64_t cost = 0) {
