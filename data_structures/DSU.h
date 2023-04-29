@@ -24,6 +24,10 @@ namespace alg::data_struct {
             return parent[vertex] = get(parent[vertex]);
         }
 
+        bool in_one_component(size_t vertex1, size_t vertex2) {
+            return get(vertex1) == get(vertex2);
+        }
+
         bool unite(size_t vertex1, size_t vertex2) {
             vertex1 = get(vertex1);
             vertex2 = get(vertex2);
