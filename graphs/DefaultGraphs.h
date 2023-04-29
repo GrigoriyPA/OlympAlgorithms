@@ -38,7 +38,7 @@ namespace alg::graph {
                 }
                 else {
                     markup[to] = markup[vertex];
-                    interal_bridge_finding_dfs(to, markup[vertex], bridges, markup, tin, up);
+                    interal_bridge_finding_dfs(to, current_color, bridges, markup, tin, up);
                 }
             }
         }
