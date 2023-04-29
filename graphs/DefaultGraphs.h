@@ -70,6 +70,32 @@ namespace alg::graph {
             }
         }
 
+        void interal_condensation_finding_dfs(size_t vertex, size_t& current_color, size_t& timer, std::vector<size_t>& tin, std::vector<size_t>& up, std::vector<size_t>& stack, std::vector<size_t>& markup) const {
+            tin[vertex] = ++timer;
+            up[vertex] = tin[vertex];
+            stack.push_back(vertex);
+            for (auto [to, id] : adj[vertex]) {
+                if (tin[to] != 0) {
+                    up[vertex] = std::min(up[vertex], tin[to]);
+                    continue;
+                }
+
+                interal_condensation_finding_dfs(to, current_color, timer, tin, up, stack, markup);
+
+                up[vertex] = std::min(up[vertex], up[to]);
+            }
+
+            if (up[vertex] == tin[vertex]) {
+                markup[vertex] = current_color;
+                for (; stack.back() != vertex; stack.pop_back()) {
+                    markup[stack.back()] = current_color;
+                }
+                stack.pop_back();
+
+                ++current_color;
+            }
+        }
+
     public:
         template <typename T>
         Graph(const std::vector<std::vector<T>>& adjacency_list) {
@@ -85,6 +111,14 @@ namespace alg::graph {
 
         Graph(size_t number_of_vertexes) {
             adj.resize(number_of_vertexes);
+        }
+
+        const std::vector<Edge>& operator[](size_t index) const {
+            if (index >= size()) {
+                throw func::AlgOutOfRange(__FILE__, __LINE__, "operator[], vertex index out of range.\n\n");
+            }
+
+            return adj[index];
         }
 
         const std::vector<std::vector<Edge>>& get_adjacency_list() const noexcept {
@@ -108,6 +142,24 @@ namespace alg::graph {
             adj[from].emplace_back(to, number_of_edges);
             adj[to].emplace_back(from, number_of_edges);
             return number_of_edges++;
+        }
+
+        std::vector<size_t> find_condensation() const {
+            size_t timer = 0;
+            size_t current_color = 1;
+            std::vector<size_t> tin(size(), 0);
+            std::vector<size_t> up(size(), 0);
+            std::vector<size_t> stack;
+            std::vector<size_t> markup(size(), std::numeric_limits<size_t>::max());
+            for (size_t vertex = 0; vertex < size(); ++vertex) {
+                if (tin[vertex] > 0) {
+                    continue;
+                }
+
+                interal_condensation_finding_dfs(vertex, current_color, timer, tin, up, stack, markup);
+            }
+
+            return markup;
         }
 
         std::pair<std::vector<EdgeInfo>, std::vector<size_t>> find_bridges() const {

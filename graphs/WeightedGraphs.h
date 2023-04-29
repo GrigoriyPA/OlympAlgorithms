@@ -25,6 +25,14 @@ namespace alg::graph {
             adj.resize(number_of_vertexes);
         }
 
+        const std::vector<WeightedEdge>& operator[](size_t index) const {
+            if (index >= size()) {
+                throw func::AlgOutOfRange(__FILE__, __LINE__, "operator[], vertex index out of range.\n\n");
+            }
+
+            return adj[index];
+        }
+
         const std::vector<std::vector<WeightedEdge>>& get_adjacency_list() const noexcept {
             return adj;
         }
@@ -192,6 +200,14 @@ namespace alg::graph {
 
         CapacityGraph(size_t number_of_vertexes) {
             adj.resize(number_of_vertexes);
+        }
+
+        const std::vector<CapacityEdge>& operator[](size_t index) const {
+            if (index >= size()) {
+                throw func::AlgOutOfRange(__FILE__, __LINE__, "operator[], vertex index out of range.\n\n");
+            }
+
+            return adj[index];
         }
 
         const std::vector<std::vector<CapacityEdge>>& get_adjacency_list() const noexcept {

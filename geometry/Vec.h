@@ -78,19 +78,19 @@ namespace alg::geom {
             return !func::equality(x, other.x) || !func::equality(y, other.y);
         }
 
-        Vec2<ValueType>& operator+=(const Vec2<ValueType>& other)& noexcept {
+        Vec2<ValueType>& operator+=(const Vec2<ValueType>& other) & noexcept {
             x += other.x;
             y += other.y;
             return *this;
         }
 
-        Vec2<ValueType>& operator-=(const Vec2<ValueType>& other)& noexcept {
+        Vec2<ValueType>& operator-=(const Vec2<ValueType>& other) & noexcept {
             x -= other.x;
             y -= other.y;
             return *this;
         }
 
-        Vec2<ValueType>& operator*=(ValueType other)& noexcept {
+        Vec2<ValueType>& operator*=(ValueType other) & noexcept {
             x *= other;
             y *= other;
             return *this;
@@ -116,7 +116,7 @@ namespace alg::geom {
             return *this;
         }
 
-        Vec2<ValueType>& operator^=(uint32_t other)& noexcept {
+        Vec2<ValueType>& operator^=(uint32_t other) & noexcept {
             x = func::binary_exponentiation(x, other);
             y = func::binary_exponentiation(y, other);
             return *this;
@@ -172,6 +172,10 @@ namespace alg::geom {
 
         ValueType length() const {
             return ValueType(std::sqrtl(*this * *this));
+        }
+
+        ValueType manhattan_length() const {
+            return std::abs(x) + std::abs(y);
         }
 
         ValueType get_value(std::function<ValueType(ValueType, ValueType)> func) const {
@@ -265,16 +269,6 @@ namespace alg::geom {
     };
 
     template <typename T>
-    struct std::hash<alg::geom::Vec2<T>> {
-        size_t operator()(const alg::geom::Vec2<T>& vector) const noexcept {
-            size_t result = 0;
-            alg::func::hash_combine(result, vector.x);
-            alg::func::hash_combine(result, vector.y);
-            return result;
-        }
-    };
-
-    template <typename T>
     std::istream& operator>>(std::istream& fin, Vec2<T>& vector) noexcept {
         fin >> vector.x >> vector.y;
         return fin;
@@ -287,7 +281,8 @@ namespace alg::geom {
 
         if (std::count(x_str.begin(), x_str.end(), '\n') == 0 && std::count(y_str.begin(), y_str.end(), '\n') == 0) {
             fout << '(' << vector.x << ", " << vector.y << ')';
-        } else {
+        }
+        else {
             fout << func::make_table_decorated({ { x_str, y_str } }, false, "", "", char(179), std::string(1, char(218)) + " " + std::string(1, char(191)), std::string(1, char(192)) + " " + std::string(1, char(217)));
         }
 
@@ -401,21 +396,21 @@ namespace alg::geom {
             return !func::equality(x, other.x) || !func::equality(y, other.y) || !func::equality(z, other.z);
         }
 
-        Vec3<ValueType>& operator+=(const Vec3<ValueType>& other)& noexcept {
+        Vec3<ValueType>& operator+=(const Vec3<ValueType>& other) & noexcept {
             x += other.x;
             y += other.y;
             z += other.z;
             return *this;
         }
 
-        Vec3<ValueType>& operator-=(const Vec3<ValueType>& other)& noexcept {
+        Vec3<ValueType>& operator-=(const Vec3<ValueType>& other) & noexcept {
             x -= other.x;
             y -= other.y;
             z -= other.z;
             return *this;
         }
 
-        Vec3<ValueType>& operator*=(ValueType other)& noexcept {
+        Vec3<ValueType>& operator*=(ValueType other) & noexcept {
             x *= other;
             y *= other;
             z *= other;
@@ -444,7 +439,7 @@ namespace alg::geom {
             return *this;
         }
 
-        Vec3<ValueType>& operator^=(uint32_t other)& noexcept {
+        Vec3<ValueType>& operator^=(uint32_t other) & noexcept {
             x = func::binary_exponentiation(x, other);
             y = func::binary_exponentiation(y, other);
             z = func::binary_exponentiation(z, other);
@@ -500,7 +495,11 @@ namespace alg::geom {
         }
 
         ValueType length() const {
-            return ValueType(std::sqrtl(*this * *this));
+            return ValueType(sqrtl(*this * *this));
+        }
+
+        ValueType manhattan_length() const {
+            return std::abs(x) + std::abs(y) + std::abs(z);
         }
 
         ValueType get_value(std::function<ValueType(ValueType, ValueType)> func) const {
@@ -628,17 +627,6 @@ namespace alg::geom {
     };
 
     template <typename T>
-    struct std::hash<alg::geom::Vec3<T>> {
-        size_t operator()(const alg::geom::Vec3<T>& vector) const noexcept {
-            size_t result = 0;
-            alg::func::hash_combine(result, vector.x);
-            alg::func::hash_combine(result, vector.y);
-            alg::func::hash_combine(result, vector.z);
-            return result;
-        }
-    };
-
-    template <typename T>
     std::istream& operator>>(std::istream& fin, Vec3<T>& vector) noexcept {
         fin >> vector.x >> vector.y >> vector.z;
         return fin;
@@ -652,7 +640,8 @@ namespace alg::geom {
 
         if (std::count(x_str.begin(), x_str.end(), '\n') == 0 && std::count(y_str.begin(), y_str.end(), '\n') == 0 && std::count(z_str.begin(), z_str.end(), '\n') == 0) {
             fout << '(' << x_str << ", " << y_str << ", " << z_str << ')';
-        } else {
+        }
+        else {
             fout << func::make_table_decorated({ { x_str, y_str, z_str } }, false, "", "", char(179), std::string(1, char(218)) + " " + std::string(1, char(191)), std::string(1, char(192)) + " " + std::string(1, char(217)));
         }
         return fout;
@@ -667,5 +656,26 @@ namespace alg::geom {
     // ^^^ ------------Vec3----------- ^^^
     // -----------------------------------
 }   // Vec2, Vec3 | Version: 1.0
+
+template <typename T>
+struct std::hash<alg::geom::Vec2<T>> {
+    size_t operator()(const alg::geom::Vec2<T>& vector) const noexcept {
+        size_t result = 0;
+        alg::func::hash_combine(result, vector.x);
+        alg::func::hash_combine(result, vector.y);
+        return result;
+    }
+};
+
+template <typename T>
+struct std::hash<alg::geom::Vec3<T>> {
+    size_t operator()(const alg::geom::Vec3<T>& vector) const noexcept {
+        size_t result = 0;
+        alg::func::hash_combine(result, vector.x);
+        alg::func::hash_combine(result, vector.y);
+        alg::func::hash_combine(result, vector.z);
+        return result;
+    }
+};
 
 using namespace alg::geom;
