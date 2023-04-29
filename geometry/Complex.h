@@ -363,7 +363,7 @@ namespace alg {
 
     namespace func {
         template <typename T1, typename T2>  // T1, T2 - standard numeric types
-        bool equality(const Complex<T1>& left, const Complex<T2>& right, long double eps = func::EPS) noexcept {
+        bool equality(const Complex<T1>& left, const Complex<T2>& right, long double eps = EPS) noexcept {
             return func::equality(left.re, right.re, eps) && func::equality(left.im, right.im, eps);
         }
     }

@@ -10,5 +10,6 @@
 #include "SparseTable.h"
 #include "SegmentTree.h"
 #include "HeapTree.h"
+#include "DSU.h"
 
 // Version: 1.0

@@ -73,7 +73,8 @@ namespace alg::func {
             bool skip_character = pred(character);
             if (split_str.back().size() > 0 && skip_character) {
                 split_str.push_back("");
-            } else if (!skip_character) {
+            }
+            else if (!skip_character) {
                 split_str.back().push_back(character);
             }
         }
@@ -157,7 +158,7 @@ namespace alg::func {
         }
         return make_table(table_description);
     }
-    
+
     // Up and down string format: "lmr" (l - left symbol, m - middle symbols, r - right symbol)
     std::string make_table_decorated(const std::vector<std::vector<std::string>>& description, bool named_columns = false, const std::string& vertical_sep = std::string(1, char(179)), const std::string& horizontal_sep = std::string(1, char(196)), char vertical_border = char(179), const std::string& up_border = std::string(1, char(218)) + std::string(1, char(196)) + std::string(1, char(191)), const std::string& down_border = std::string(1, char(192)) + std::string(1, char(196)) + std::string(1, char(217))) {
         size_t max_string_length = 0;
@@ -196,7 +197,7 @@ namespace alg::func {
                     table += up_border[1];
                     table += char(194);
                     table += up_border[1];
-                } 
+                }
                 else {
                     for (size_t j = 0; j < 2 + vertical_sep.size() && i + 1 < max_string_length; ++j) {
                         table += up_border[1];
@@ -236,7 +237,7 @@ namespace alg::func {
 
                 if (vertical_border == char(179) && up_border[1] == char(196)) {
                     table += char(195);
-                } 
+                }
                 else {
                     table += vertical_border;
                 }
@@ -251,7 +252,7 @@ namespace alg::func {
                         table += up_border[1];
                         table += char(197);
                         table += up_border[1];
-                    } 
+                    }
                     else {
                         for (size_t k = 0; k < 2 + vertical_sep.size() && j + 1 < max_string_length; ++k) {
                             table += up_border[1];
@@ -262,13 +263,13 @@ namespace alg::func {
 
                 if (vertical_border == char(179) && up_border[1] == char(196)) {
                     table += char(180);
-                } 
+                }
                 else {
                     table += vertical_border;
                 }
 
                 table += '\n';
-            } 
+            }
             else if (!horizontal_sep.empty() && i + 1 < description.size()) {
                 if (horizontal_sep.size() != 1) {
                     throw AlgInvalidArgument(__FILE__, __LINE__, "make_table_decorated, invalid horizontal sep description");
@@ -292,7 +293,7 @@ namespace alg::func {
                             table += horizontal_sep;
                             table += char(197);
                             table += horizontal_sep;
-                        } 
+                        }
                         else {
                             table += horizontal_sep + vertical_sep + horizontal_sep;
                         }
@@ -302,7 +303,7 @@ namespace alg::func {
 
                 if (vertical_border == char(179) && horizontal_sep == std::string(1, char(196))) {
                     table += char(180);
-                } 
+                }
                 else {
                     table += vertical_border;
                 }
@@ -536,7 +537,7 @@ namespace alg::func {
 
         template <typename T>
         T rand_int(T left, T right) {
-            return RandIntStruct<has_zip_map<T>(left, right, [&](auto left, auto right) { return left; }), T>(this)(left, right);
+            return RandIntStruct < has_zip_map<T>(left, right, [&](auto left, auto right) { return left; }), T > (this)(left, right);
         }
 
         template <typename It>  // Operators required: !=(It, It), ++(It), *(It)
@@ -555,7 +556,7 @@ namespace alg::func {
 
         template <typename T>
         T rand_float(T left, T right) {
-            return RandFloatStruct<has_zip_map<T>(left, right, [&](auto left, auto right) { return left; }), T>(this)(left, right);
+            return RandFloatStruct < has_zip_map<T>(left, right, [&](auto left, auto right) { return left; }), T > (this)(left, right);
         }
 
         template <typename It>  // Operators required: !=(It, It), ++(It), *(It)
