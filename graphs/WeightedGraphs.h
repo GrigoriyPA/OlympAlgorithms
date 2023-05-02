@@ -92,6 +92,109 @@ namespace alg::graph {
             return mst;
         }
 
+        std::pair<std::vector<int64_t>, std::vector<WeightedEdgeInfo>> find_closest_paths_dijkstra(size_t start) const {
+            if (start >= size()) {
+                throw func::AlgOutOfRange(__FILE__, __LINE__, "find_closest_paths_floyd, start vertex index out of range.\n\n");
+            }
+
+            std::vector<bool> used(size(), false);
+            std::vector<WeightedEdgeInfo> parent(size(), WeightedEdgeInfo(0, 0, 0));
+            std::vector<int64_t> distance(size(), std::numeric_limits<int64_t>::max());
+            distance[start] = 0;
+            for (; true;) {
+                size_t vertex = std::numeric_limits<size_t>::max();
+                for (size_t i = 0; i < size(); ++i) {
+                    if (used[i] || distance[i] == std::numeric_limits<int64_t>::max()) {
+                        continue;
+                    }
+
+                    if (vertex == std::numeric_limits<size_t>::max() || distance[i] < distance[vertex]) {
+                        vertex = i;
+                    }
+                }
+
+                if (vertex == std::numeric_limits<size_t>::max()) {
+                    break;
+                }
+                used[vertex] = true;
+
+                for (auto [to, weight, id] : adj[vertex]) {
+                    if (distance[to] <= distance[vertex] + weight) {
+                        continue;
+                    }
+
+                    distance[to] = distance[vertex] + weight;
+                    parent[to] = WeightedEdgeInfo(vertex, to, weight, id);
+                }
+            }
+
+            return { distance, parent };
+        }
+
+        std::pair<std::vector<int64_t>, std::vector<WeightedEdgeInfo>> find_closest_paths_dijkstra_set(size_t start) const {
+            if (start >= size()) {
+                throw func::AlgOutOfRange(__FILE__, __LINE__, "find_closest_paths_floyd, start vertex index out of range.\n\n");
+            }
+
+            std::vector<WeightedEdgeInfo> parent(size(), WeightedEdgeInfo(0, 0, 0));
+            std::vector<int64_t> distance(size(), std::numeric_limits<int64_t>::max());
+            distance[start] = 0;
+
+            std::set<std::pair<int64_t, size_t>> order;
+            order.emplace(0, start);
+            for (; !order.empty();) {
+                auto [vertex_distance, vertex] = *order.begin();
+                order.erase(order.begin());
+
+                for (auto [to, weight, id] : adj[vertex]) {
+                    if (distance[to] <= vertex_distance + weight) {
+                        continue;
+                    }
+
+                    order.erase({ distance[to], to });
+                    distance[to] = vertex_distance + weight;
+                    parent[to] = WeightedEdgeInfo(vertex, to, weight, id);
+                    order.insert({ distance[to], to });
+                }
+            }
+
+            return { distance, parent };
+        }
+
+        std::pair<std::vector<int64_t>, std::vector<WeightedEdgeInfo>> find_closest_paths_floyd(size_t start) const {
+            if (start >= size()) {
+                throw func::AlgOutOfRange(__FILE__, __LINE__, "find_closest_paths_floyd, start vertex index out of range.\n\n");
+            }
+
+            std::vector<WeightedEdgeInfo> parent(size(), WeightedEdgeInfo(0, 0, 0));
+            std::vector<bool> in_order(size(), false);
+
+            std::vector<int64_t> distance(size(), std::numeric_limits<int64_t>::max());
+            distance[start] = 0;
+
+            std::queue<size_t> order;
+            order.push(start);
+            for (; !order.empty(); order.pop()) {
+                size_t vertex = order.front();
+                in_order[vertex] = false;
+                for (auto [to, weight, id] : adj[vertex]) {
+                    if (distance[to] <= distance[vertex] + weight) {
+                        continue;
+                    }
+
+                    distance[to] = distance[vertex] + weight;
+                    parent[to] = WeightedEdgeInfo(vertex, to, weight, id);
+
+                    if (!in_order[to]) {
+                        order.push(to);
+                        in_order[to] = true;
+                    }
+                }
+            }
+
+            return { distance, parent };
+        }
+
         size_t size() const noexcept {
             return adj.size();
         }
@@ -238,6 +341,18 @@ namespace alg::graph {
             return result;
         }
 
+        int64_t get_flow_cost() const noexcept {
+            int64_t result = 0;
+            for (size_t vertex = 0; vertex < size(); ++vertex) {
+                for (auto [to, capacity, cost, id] : adj[vertex]) {
+                    if (id % 2 == 0) {
+                        result += flow[id] * cost;
+                    }
+                }
+            }
+            return result;
+        }
+
         std::vector<std::pair<int64_t, std::vector<CapacityEdgeInfo>>> get_flow_decomposition() const {
             std::vector<std::pair<int64_t, std::vector<CapacityEdgeInfo>>> decomposition;
 
@@ -264,7 +379,7 @@ namespace alg::graph {
             }
 
             adj[from].emplace_back(to, capacity, cost, 2 * number_of_edges);
-            adj[to].emplace_back(from, 0, cost, 2 * number_of_edges + 1);
+            adj[to].emplace_back(from, 0, -cost, 2 * number_of_edges + 1);
             return number_of_edges++;
         }
 
@@ -301,6 +416,76 @@ namespace alg::graph {
 
                 std::vector<size_t> current_edge(size(), 0);
                 for (; interal_blocking_flow_finding_dfs(source, minimal_capacity, current_edge, distance);) {}
+            }
+        }
+
+        void build_min_cost_max_flow(size_t source, size_t terminal) {
+            if (source >= size() || terminal >= size()) {
+                throw func::AlgOutOfRange(__FILE__, __LINE__, "build_min_cost_max_flow, vertex index out of range.\n\n");
+            }
+
+            this->source = source;
+            this->terminal = terminal;
+            flow.assign(2 * number_of_edges, 0);
+            WeightedGraph residual_net(size());
+            for (size_t vertex = 0; vertex < size(); ++vertex) {
+                for (auto [to, capacity, cost, id] : adj[vertex]) {
+                    if (capacity > flow[id]) {
+                        residual_net.push_edge(vertex, to, cost);
+                    }
+                }
+            }
+            auto potential = residual_net.find_closest_paths_floyd(source).first;
+
+            for (; potential[terminal] != std::numeric_limits<int64_t>::max();) {
+                std::vector<bool> used(size(), false);
+                std::vector<WeightedEdgeInfo> parent(size(), WeightedEdgeInfo(0, 0, 0));
+                std::vector<int64_t> distance(size(), std::numeric_limits<int64_t>::max());
+                distance[source] = 0;
+                for (; true;) {
+                    size_t vertex = std::numeric_limits<size_t>::max();
+                    for (size_t i = 0; i < size(); ++i) {
+                        if (used[i] || distance[i] == std::numeric_limits<int64_t>::max()) {
+                            continue;
+                        }
+
+                        if (vertex == std::numeric_limits<size_t>::max() || distance[i] < distance[vertex]) {
+                            vertex = i;
+                        }
+                    }
+
+                    if (vertex == std::numeric_limits<size_t>::max()) {
+                        break;
+                    }
+                    used[vertex] = true;
+
+                    for (auto [to, capacity, cost, id] : adj[vertex]) {
+                        cost += potential[vertex] - potential[to];
+                        if (capacity == flow[id] || distance[to] <= distance[vertex] + cost) {
+                            continue;
+                        }
+
+                        distance[to] = distance[vertex] + cost;
+                        parent[to] = WeightedEdgeInfo(vertex, to, capacity - flow[id], id);
+                    }
+                }
+
+                if (distance[terminal] == std::numeric_limits<int64_t>::max()) {
+                    break;
+                }
+
+                for (size_t vertex = 0; vertex < size(); ++vertex) {
+                    potential[vertex] = distance[vertex] - potential[source] + potential[vertex];
+                }
+
+                int64_t minimal_capacity = std::numeric_limits<int64_t>::max();
+                for (size_t vertex = terminal; vertex != source; vertex = parent[vertex].from) {
+                    minimal_capacity = std::min(minimal_capacity, parent[vertex].weight);
+                }
+                for (size_t vertex = terminal; vertex != source; vertex = parent[vertex].from) {
+                    flow[parent[vertex].id] += minimal_capacity;
+                    flow[parent[vertex].id ^ 1] -= minimal_capacity;
+                }
             }
         }
 
