@@ -8,6 +8,20 @@ namespace alg::graph {
 
         std::vector<std::vector<Edge>> adj;
 
+        bool interal_bipart_markup_finding_dfs(size_t vertex, size_t color, std::vector<size_t>& markup) const {
+            markup[vertex] = color;
+            bool is_valid = true;
+            for (auto [to, id] : adj[vertex]) {
+                if (markup[to] != 0) {
+                    is_valid = is_valid && markup[to] == 3 - color;
+                    continue;
+                }
+
+                is_valid = is_valid && interal_bipart_markup_finding_dfs(to, 3 - color, markup);
+            }
+            return is_valid;
+        }
+
         void calculation_tin_up_dfs(size_t vertex, size_t parent, size_t& timer, std::vector<size_t>& tin, std::vector<size_t>& up) const {
             tin[vertex] = ++timer;
             up[vertex] = tin[vertex];
@@ -123,6 +137,21 @@ namespace alg::graph {
 
         const std::vector<std::vector<Edge>>& get_adjacency_list() const noexcept {
             return adj;
+        }
+
+        std::vector<size_t> get_bipart_markup() const {
+            std::vector<size_t> markup(size(), 0);
+            for (size_t vertex = 0; vertex < size(); ++vertex) {
+                if (markup[vertex] != 0) {
+                    continue;
+                }
+
+                if (!interal_bipart_markup_finding_dfs(vertex, 1, markup)) {
+                    throw func::AlgRuntimeError(__FILE__, __LINE__, "get_bipartite_markup, graph is not bipartite.\n\n");
+                }
+            }
+
+            return markup;
         }
 
         size_t push_edge(size_t from, size_t to) {
