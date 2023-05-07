@@ -57,6 +57,51 @@ namespace alg::graph {
         }
 
         std::vector<WeightedEdgeInfo> find_mst() const {
+            std::vector<bool> used(size(), false);
+            std::vector<WeightedEdgeInfo> parent(size(), WeightedEdgeInfo(0, 0, 0, 0));
+            std::vector<int64_t> distance(size(), std::numeric_limits<int64_t>::max());
+            distance[0] = 0;
+            for (; true;) {
+                size_t vertex = std::numeric_limits<size_t>::max();
+                for (size_t i = 0; i < size(); ++i) {
+                    if (used[i] || distance[i] == std::numeric_limits<int64_t>::max()) {
+                        continue;
+                    }
+
+                    if (vertex == std::numeric_limits<size_t>::max() || distance[i] < distance[vertex]) {
+                        vertex = i;
+                    }
+                }
+
+                if (vertex == std::numeric_limits<size_t>::max()) {
+                    break;
+                }
+                used[vertex] = true;
+
+                for (auto [to, weight, id] : adj[vertex]) {
+                    if (used[to] || distance[to] <= weight) {
+                        continue;
+                    }
+
+                    distance[to] = weight;
+                    parent[to] = WeightedEdgeInfo(vertex, to, weight, id);
+                }
+            }
+
+            std::vector<WeightedEdgeInfo> mst;
+            mst.reserve(size());
+            for (size_t i = 1; i < size(); ++i) {
+                if (!used[i]) {
+                    throw func::AlgRuntimeError(__FILE__, __LINE__, "find_mst, the graph is not connected.\n\n");
+                }
+
+                mst.push_back(parent[i]);
+            }
+
+            return mst;
+        }
+
+        std::vector<WeightedEdgeInfo> find_mst_set() const {
             std::vector<int64_t> distance(size(), std::numeric_limits<int64_t>::max());
             distance[0] = 0;
 
@@ -94,7 +139,7 @@ namespace alg::graph {
 
         std::pair<std::vector<int64_t>, std::vector<WeightedEdgeInfo>> find_closest_paths_dijkstra(size_t start) const {
             if (start >= size()) {
-                throw func::AlgOutOfRange(__FILE__, __LINE__, "find_closest_paths_floyd, start vertex index out of range.\n\n");
+                throw func::AlgOutOfRange(__FILE__, __LINE__, "find_closest_paths_ford, start vertex index out of range.\n\n");
             }
 
             std::vector<bool> used(size(), false);
@@ -133,7 +178,7 @@ namespace alg::graph {
 
         std::pair<std::vector<int64_t>, std::vector<WeightedEdgeInfo>> find_closest_paths_dijkstra_set(size_t start) const {
             if (start >= size()) {
-                throw func::AlgOutOfRange(__FILE__, __LINE__, "find_closest_paths_floyd, start vertex index out of range.\n\n");
+                throw func::AlgOutOfRange(__FILE__, __LINE__, "find_closest_paths_ford, start vertex index out of range.\n\n");
             }
 
             std::vector<WeightedEdgeInfo> parent(size(), WeightedEdgeInfo(0, 0, 0));
@@ -161,9 +206,9 @@ namespace alg::graph {
             return { distance, parent };
         }
 
-        std::pair<std::vector<int64_t>, std::vector<WeightedEdgeInfo>> find_closest_paths_floyd(size_t start) const {
+        std::pair<std::vector<int64_t>, std::vector<WeightedEdgeInfo>> find_closest_paths_ford(size_t start) const {
             if (start >= size()) {
-                throw func::AlgOutOfRange(__FILE__, __LINE__, "find_closest_paths_floyd, start vertex index out of range.\n\n");
+                throw func::AlgOutOfRange(__FILE__, __LINE__, "find_closest_paths_ford, start vertex index out of range.\n\n");
             }
 
             std::vector<WeightedEdgeInfo> parent(size(), WeightedEdgeInfo(0, 0, 0));
@@ -435,7 +480,7 @@ namespace alg::graph {
                     }
                 }
             }
-            auto potential = residual_net.find_closest_paths_floyd(source).first;
+            auto potential = residual_net.find_closest_paths_ford(source).first;
 
             for (; potential[terminal] != std::numeric_limits<int64_t>::max();) {
                 std::vector<bool> used(size(), false);

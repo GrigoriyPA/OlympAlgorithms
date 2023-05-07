@@ -254,6 +254,7 @@ namespace alg::graph {
             return number_of_edges;
         }
     };
+#define Graph__INCLUDED
 
 
     // ^^^ -----------Graph----------- ^^^
@@ -281,6 +282,22 @@ namespace alg::graph {
         BipartiteGraph(size_t left_size, size_t right_size) {
             adj_left.resize(left_size);
             adj_right.resize(right_size);
+        }
+
+        const std::vector<size_t>& get_left(size_t vertex) const {
+            if (vertex >= size_left()) {
+                throw func::AlgOutOfRange(__FILE__, __LINE__, "get_left, vertex index out of range.\n\n");
+            }
+
+            return adj_left[vertex];
+        }
+
+        const std::vector<size_t>& get_right(size_t vertex) const {
+            if (vertex >= size_right()) {
+                throw func::AlgOutOfRange(__FILE__, __LINE__, "get_right, vertex index out of range.\n\n");
+            }
+
+            return adj_right[vertex];
         }
 
         void push_edge(size_t left, size_t right) {

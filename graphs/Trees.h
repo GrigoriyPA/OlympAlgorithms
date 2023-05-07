@@ -60,6 +60,7 @@ namespace alg::graph {
             }
         }
 
+#ifdef Graph__INCLUDED
         Tree(const Graph& graph, const std::vector<size_t>& markup) {
             adj.resize(func::get_value(markup.begin(), markup.end(), std::max));
 
@@ -85,6 +86,7 @@ namespace alg::graph {
                 throw func::AlgInvalidArgument(__FILE__, __LINE__, "Tree, invalid graph markup.\n\n");
             }
         }
+#endif // Graph__INCLUDED
 
         const std::vector<WeightedEdge>& operator[](size_t index) const {
             if (index >= size()) {
