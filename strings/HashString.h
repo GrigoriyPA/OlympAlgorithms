@@ -291,7 +291,7 @@ namespace alg::str {
             if (empty() || other.empty()) {
                 return 0;
             }
-            return SubString<BASE, MODUL>(0, size() - 1, this) & SubString<BASE, MODUL>(0, other.size() - 1, &other);
+            return SubString<BASE, MODUL>(0, size() - 1, this)& SubString<BASE, MODUL>(0, other.size() - 1, &other);
         }
 
         uint64_t get_hash(size_t left_id, size_t right_id) const {
@@ -318,6 +318,14 @@ namespace alg::str {
                 str.push_back((*this)[i]);
             }
             return str;
+        }
+
+        uint64_t get_power(size_t degree) const {
+            if (degree >= power_.size()) {
+                throw func::AlgOutOfRange(__FILE__, __LINE__, "get_power, invalid degree.");
+            }
+
+            return power_[degree];
         }
 
         size_t size() const noexcept {
@@ -398,5 +406,3 @@ namespace alg::str {
     // ^^^ ---------HashString-------- ^^^
     // -----------------------------------
 }   // HashString | Version: 1.0
-
-using namespace alg::str;

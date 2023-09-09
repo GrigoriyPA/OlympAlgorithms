@@ -12,9 +12,9 @@
 
 #include "Functions.h"
 #include "math/Math.h"
+#include "graphs/Graphs.h"
 #include "strings/Strings.h"
 #include "geometry/Geometry.h"
 #include "data_structures/DataStructures.h"
-#include "graphs/Graphs.h"
 
 // Version: 1.0

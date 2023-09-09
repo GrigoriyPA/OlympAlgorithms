@@ -202,6 +202,7 @@ namespace alg::graph {
             return adj.size();
         }
     };
+#define Tree__INCLUDED
 
 
     // ^^^ ------------Tree----------- ^^^

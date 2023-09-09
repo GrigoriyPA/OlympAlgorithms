@@ -578,6 +578,17 @@ namespace alg::func {
             std::shuffle(begin, end, generator);
         }
 
+        template <typename T>  // Casts required: T(size_t)
+        std::vector<T> permutation(size_t size) {
+            std::vector<T> result(size);
+            for (size_t i = 0; i < size; ++i) {
+                result[i] = T(i + 1);
+            }
+
+            shuffle(result.begin(), result.end());
+            return result;
+        }
+
         std::vector<size_t> permutation(size_t size) {
             std::vector<size_t> result(size);
             for (size_t i = 0; i < size; ++i) {
@@ -586,6 +597,17 @@ namespace alg::func {
 
             shuffle(result.begin(), result.end());
             return result;
+        }
+
+        template <typename T>
+        void random_swap(std::vector<T>& vector) {
+            if (vector.empty()) {
+                return;
+            }
+
+            size_t first = rand_int(static_cast<size_t>(0), vector.size() - 1);
+            size_t seccond = rand_int(static_cast<size_t>(0), vector.size() - 1);
+            std::swap(vector[first], vector[seccond]);
         }
     };
 
