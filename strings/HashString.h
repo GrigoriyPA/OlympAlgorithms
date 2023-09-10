@@ -127,7 +127,7 @@ namespace alg::str {
     // vvv ---------HashString-------- vvv
 
 
-    // Polynomial hashing by base BASE with modul MODUL
+    // Polynomial hashing by base BASE with module MODUL
     // Expected BASE and MODUL:
     // -- BASE, MODUL - prime values
     // -- 256 < BASE < MODUL < 2^32

@@ -171,7 +171,7 @@ namespace alg::geom {
         }
 
         ValueType length() const {
-            return ValueType(std::sqrtl(*this * *this));
+            return ValueType(sqrtl(*this * *this));
         }
 
         ValueType manhattan_length() const {

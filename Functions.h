@@ -491,10 +491,10 @@ namespace alg::func {
             }
         };
 
-        std::mt19937_64 generator;
+        std::mt19937_64 generator_;
 
         long double rand() {
-            return static_cast<long double>(generator()) / static_cast<long double>(generator.max());
+            return static_cast<long double>(generator_()) / static_cast<long double>(generator_.max());
         }
 
         int64_t get_rand_int(int64_t left, int64_t right) {
@@ -503,7 +503,7 @@ namespace alg::func {
             }
 
             std::uniform_int_distribution<int64_t> int_generator(left, right);
-            return int_generator(generator);
+            return int_generator(generator_);
         }
 
         long double get_rand_float(long double left, long double right) {
@@ -527,11 +527,11 @@ namespace alg::func {
 
     public:
         explicit Random(uint64_t seed) {
-            generator.seed(seed);
+            generator_.seed(seed);
         }
 
         Random& set_seed(uint64_t seed) {
-            generator.seed(seed);
+            generator_.seed(seed);
             return *this;
         }
 
@@ -575,7 +575,7 @@ namespace alg::func {
 
         template <typename It>
         void shuffle(It begin, It end) {
-            std::shuffle(begin, end, generator);
+            std::shuffle(begin, end, generator_);
         }
 
         template <typename T>  // Casts required: T(size_t)
@@ -608,6 +608,10 @@ namespace alg::func {
             size_t first = rand_int(static_cast<size_t>(0), vector.size() - 1);
             size_t seccond = rand_int(static_cast<size_t>(0), vector.size() - 1);
             std::swap(vector[first], vector[seccond]);
+        }
+
+        bool try_event(long double probability) {
+            return func::less_equality(rand_float(static_cast<long double>(0), static_cast<long double>(1)), probability);
         }
     };
 

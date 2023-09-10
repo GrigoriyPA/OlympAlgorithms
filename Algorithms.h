@@ -17,4 +17,5 @@
 #include "geometry/Geometry.h"
 #include "data_structures/DataStructures.h"
 
+#include "optimize/Optimize.h"
 // Version: 1.0
