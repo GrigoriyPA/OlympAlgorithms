@@ -24,15 +24,17 @@ namespace alg {
 
             // Casts required: ValueType(long double)
             Complex(const AngleRepresentation& complex) {
-                re = ValueType(complex.length * std::cosl(complex.angle));
-                im = ValueType(complex.length * std::sinl(complex.angle));
+                re = ValueType(complex.length * cosl(complex.angle));
+                im = ValueType(complex.length * sinl(complex.angle));
             }
 
+#ifdef Vec__INCLUDED
             template <typename T>  // Casts required: ValueType(T)
             explicit Complex(const Vec2<T>& vect) {
                 re = ValueType(vect.x);
                 im = ValueType(vect.y);
             }
+#endif
 
             Complex(ValueType re, ValueType im) noexcept {
                 this->re = re;
@@ -67,10 +69,12 @@ namespace alg {
                 return { .length = length, .angle = atan2(im, re) };
             }
 
+#ifdef Vec__INCLUDED
             template <typename T>  // Constructors required: T(T), T(ValueType)
             explicit operator Vec2<T>() const {
                 return Vec2<T>(T(re), T(im));
             }
+#endif
 
             template <typename T>  // Constructors required: T(T), T(ValueType)
             explicit operator std::vector<T>() const {
@@ -109,34 +113,34 @@ namespace alg {
                 return !func::equality(re, other.re) || !func::equality(im, other.im);
             }
 
-            Complex<ValueType>& operator+=(const Complex<ValueType>& other)& noexcept {
+            Complex<ValueType>& operator+=(const Complex<ValueType>& other) & noexcept {
                 re += other.re;
                 im += other.im;
                 return *this;
             }
 
-            Complex<ValueType>& operator+=(const ValueType& other)& noexcept {
+            Complex<ValueType>& operator+=(const ValueType& other) & noexcept {
                 re += other;
                 return *this;
             }
 
-            Complex<ValueType>& operator-=(const Complex<ValueType>& other)& noexcept {
+            Complex<ValueType>& operator-=(const Complex<ValueType>& other) & noexcept {
                 re -= other.re;
                 im -= other.im;
                 return *this;
             }
 
-            Complex<ValueType>& operator-=(const ValueType& other)& noexcept {
+            Complex<ValueType>& operator-=(const ValueType& other) & noexcept {
                 re -= other;
                 return *this;
             }
 
-            Complex<ValueType>& operator*=(const Complex<ValueType>& other)& noexcept {
+            Complex<ValueType>& operator*=(const Complex<ValueType>& other) & noexcept {
                 *this = *this * other;
                 return *this;
             }
 
-            Complex<ValueType>& operator*=(const ValueType& other)& noexcept {
+            Complex<ValueType>& operator*=(const ValueType& other) & noexcept {
                 re *= other;
                 im *= other;
                 return *this;
@@ -162,7 +166,7 @@ namespace alg {
                 return *this;
             }
 
-            Complex<ValueType>& operator^=(int32_t other)& noexcept {
+            Complex<ValueType>& operator^=(int32_t other) & noexcept {
                 if (other < 0) {
                     *this = ValueType(1.0) / func::binary_exponentiation(*this, static_cast<uint32_t>(std::abs(other)));
                 }
@@ -235,7 +239,7 @@ namespace alg {
             Complex<ValueType> exponentiation(int32_t degree) const {
                 try {
                     auto complex = AngleRepresentation(*this);
-                    
+
                     if (degree < 0) {
                         complex.length = ValueType(1.0) / func::binary_exponentiation(complex.length, static_cast<uint32_t>(std::abs(degree)));
                     }
@@ -254,7 +258,7 @@ namespace alg {
             std::vector<Complex<ValueType>> root(uint32_t degree) const {
                 try {
                     auto complex = AngleRepresentation(*this);
-                    complex.length = std::powl(complex.length, static_cast<long double>(1.0) / static_cast<long double>(degree));
+                    complex.length = powl(complex.length, static_cast<long double>(1.0) / static_cast<long double>(degree));
                     complex.angle /= degree;
 
                     std::vector<Complex<ValueType>> result;
@@ -274,21 +278,11 @@ namespace alg {
             }
 
             long double module() const {
-                return std::sqrtl(re * re + im * im);
+                return sqrtl(re * re + im * im);
             }
 
             static Complex<ValueType> zip_map(const Complex<ValueType>& v1, const Complex<ValueType>& v2, std::function<ValueType(ValueType, ValueType)> zip_func) {
                 return Complex<ValueType>(zip_func(v1.re, v2.re), zip_func(v1.im, v2.im));
-            }
-        };
-
-        template <typename T>
-        struct std::hash<alg::geom::Complex<T>> {
-            size_t operator()(const alg::geom::Complex<T>& vector) const noexcept {
-                size_t result = 0;
-                alg::func::hash_combine(result, vector.re);
-                alg::func::hash_combine(result, vector.im);
-                return result;
             }
         };
 
@@ -363,7 +357,7 @@ namespace alg {
 
     namespace func {
         template <typename T1, typename T2>  // T1, T2 - standard numeric types
-        bool equality(const Complex<T1>& left, const Complex<T2>& right, long double eps = EPS) noexcept {
+        bool equ(const geom::Complex<T1>& left, const geom::Complex<T2>& right, long double eps = EPS) noexcept {
             return func::equality(left.re, right.re, eps) && func::equality(left.im, right.im, eps);
         }
     }
@@ -372,5 +366,15 @@ namespace alg {
     // ^^^ ----------Complex---------- ^^^
     // -----------------------------------
 }   // Complex | Version: 1.0
+
+template <typename T>
+struct std::hash<alg::geom::Complex<T>> {
+    size_t operator()(const alg::geom::Complex<T>& vector) const noexcept {
+        size_t result = 0;
+        alg::func::hash_combine(result, vector.re);
+        alg::func::hash_combine(result, vector.im);
+        return result;
+    }
+};
 
 using namespace alg::geom;

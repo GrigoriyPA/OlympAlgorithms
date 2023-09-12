@@ -652,6 +652,8 @@ namespace alg::geom {
         return Vec3<T>(vector.x * value, vector.y * value, vector.z * value);
     }
 
+#define Vec__INCLUDED
+
 
     // ^^^ ------------Vec3----------- ^^^
     // -----------------------------------
