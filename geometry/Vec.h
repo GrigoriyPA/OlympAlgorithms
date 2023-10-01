@@ -23,6 +23,12 @@ namespace alg::geom {
         }
 
         template <typename T>  // Casts required: ValueType(T)
+        Vec2(const Vec2<T>& other) noexcept {
+            x = other.x;
+            y = other.y;
+        }
+
+        template <typename T>  // Casts required: ValueType(T)
         Vec2(const std::initializer_list<T>& init) {
             size_t comp_id = 0;
             for (const T& element : init) {
@@ -190,6 +196,14 @@ namespace alg::geom {
             return get_value([&](const ValueType& left, const ValueType& right) -> const ValueType& { return func(left, right); });
         }
 
+        ValueType get_cos_angle(const Vec2<ValueType>& v) {
+            return (*this * v) / (length() * v.length());
+        }
+
+        ValueType get_sin_angle(const Vec2<ValueType>& v) {
+            return (*this ^ v) / (length() * v.length());
+        }
+
         Vec2<ValueType> normalize() const {
             ValueType vect_length = length();
             if (func::equality(vect_length, ValueType(0.0))) {
@@ -207,6 +221,10 @@ namespace alg::geom {
             catch (func::AlgDomainError) {
                 throw func::AlgDomainError(__FILE__, __LINE__, "reflect_vect, the normal vector has zero length.\n\n");
             }
+        }
+
+        Vec2<ValueType> rotate90() const noexcept {
+            return Vec2<ValueType>(-y, x);
         }
 
         bool in_angle(const Vec2<ValueType>& v1, const Vec2<ValueType>& v2) const noexcept {
@@ -230,6 +248,10 @@ namespace alg::geom {
             }
 
             return Vec2<ValueType>(x / other.x, y / other.y);
+        }
+
+        Vec2<ValueType> clamp_to_x(const Vec2<ValueType>& v) const {
+            return Vec2<ValueType>(*this * v, abs(*this ^ v));
         }
 
         void apply_func(std::function<ValueType(ValueType)> func) {
@@ -292,6 +314,23 @@ namespace alg::geom {
     template <typename T>
     Vec2<T> operator*(T value, const Vec2<T>& vector) noexcept {
         return Vec2<T>(vector.x * value, vector.y * value);
+    }
+
+    template <typename T>
+    bool angle_order_comparator(const Vec2<T>& left, const Vec2<T>& right) {
+        T product = left ^ right;
+        if (func::equality(product, T(0.0)) && func::less_equality(T(0.0), left * right)) {
+            return !func::less_equality(left.length_sqr(), right.length_sqr());
+        }
+
+        bool up_left = func::equality(left.y, T(0.0)) && func::less_equality(T(0.0), left.x) || !func::less_equality(left.y, T(0.0));
+        bool up_right = func::equality(right.y, T(0.0)) && func::less_equality(T(0.0), right.x) || !func::less_equality(right.y, T(0.0));
+
+        if (up_left != up_right) {
+            return up_left && !up_right;
+        }
+
+        return !func::less_equality(product, T(0.0));
     }
 
 
