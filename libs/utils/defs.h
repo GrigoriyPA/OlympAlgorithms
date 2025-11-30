@@ -3,11 +3,14 @@
 #include <algorithm>
 #include <bitset>
 #include <iostream>
+#include <ranges>
+#include <utility>
 #include <vector>
 #endif
 using namespace std;
 
 #define ALL(c) c.begin(), c.end()
+#define ALG_ENSURE(cond, msg) if (!(cond)) [[unlikely]] { cerr << msg << endl; abort(); }
 
 namespace NAlg::NUtil {
 
@@ -31,5 +34,25 @@ private:
 static const TInitializer init;
 
 } // namespace NDetail
+
+template <typename TLeft, typename TRight>
+auto Range(TLeft&& l, TRight&& r) {
+    return views::iota(l, max(l, r));
+}
+
+template <std::ranges::sized_range TContainer>
+auto Range(const TContainer& container) {
+    return views::iota(0zu, std::ranges::size(container));
+}
+
+template <typename T>
+inline void MinEq(T& l, const T& r) {
+    l = min(l, r);
+}
+
+template <typename T>
+inline void MaxEq(T& l, const T& r) {
+    l = max(l, r);
+}
 
 } using namespace NAlg::NUtil;

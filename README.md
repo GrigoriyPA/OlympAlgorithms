@@ -16,19 +16,17 @@
    cd OlympAlgorithms
    ```
 
-2. Create working directory `dev/` and use one of templates:
+2. Create working setup one of templates:
 
    ```bash
-   mkdir dev/
-   cp templates/CMakeLists.txt dev/
-   cp templates/leet_code/* dev/
+   ./scripts/setup_template.sh leet_code
    ```
 
 3. Write solution in `dev/solution.h`
-4. Expand includes:
+4. Expand includes and copy to clipboard:
 
    ```bash
    ./dev/prepare.sh
    ```
 
-5. Submit file `dev/submit.h`
+5. Submit file `dev/submit.h` or clipboard data
