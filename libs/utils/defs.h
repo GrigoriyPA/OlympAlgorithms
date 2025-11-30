@@ -1,8 +1,13 @@
 #pragma once
 #ifndef __ALG_DISABLE_SYSTEM_INCLUDES
+#include <algorithm>
+#include <bitset>
 #include <iostream>
+#include <vector>
 #endif
 using namespace std;
+
+#define ALL(c) c.begin(), c.end()
 
 namespace NAlg::NUtil {
 
