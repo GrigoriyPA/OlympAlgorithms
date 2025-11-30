@@ -10,7 +10,6 @@
 using namespace std;
 
 #define ALL(c) c.begin(), c.end()
-#define ALG_ENSURE(cond, msg) if (!(cond)) [[unlikely]] { cerr << msg << endl; abort(); }
 
 namespace NAlg::NUtil {
 
