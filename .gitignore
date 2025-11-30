@@ -1,2 +1,7 @@
+# Working directories
 build/
 dev/
+
+# VS code
+.cache/
+.vscode/
